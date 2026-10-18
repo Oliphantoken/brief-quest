@@ -1,0 +1,8 @@
+@BriefQuest_HostAddress = http://localhost:5247
+
+GET {{BriefQuest_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{BriefQuest_HostAddress}}
