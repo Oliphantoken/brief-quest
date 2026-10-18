@@ -21,6 +21,10 @@ var summaries = new[]
 
 app.MapGet("/", () => "Brief Quest API is running!");
 
+app.MapGet("/config-check", (IConfiguration config) =>
+    string.IsNullOrEmpty(config["Gemini:ApiKey"]) ? "Key missing" : "Key found"
+);
+
 app.MapGet("/weatherforecast", () =>
 {
     var forecast =  Enumerable.Range(1, 5).Select(index =>

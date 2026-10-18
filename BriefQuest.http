@@ -6,3 +6,6 @@ Accept: application/json
 ###
 
 GET {{BriefQuest_HostAddress}}
+###
+
+GET {{BriefQuest_HostAddress}}/config-check
