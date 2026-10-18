@@ -1,3 +1,5 @@
+using BriefQuest.Endpoints;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -19,6 +21,7 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
+
 app.MapGet("/", () => "Brief Quest API is running!");
 
 app.MapGet("/config-check", (IConfiguration config) =>
@@ -38,6 +41,8 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+app.MapBriefEndpoints();
 
 app.Run();
 
