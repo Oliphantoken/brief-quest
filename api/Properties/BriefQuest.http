@@ -1,0 +1,36 @@
+@BriefQuest_HostAddress = http://localhost:5247
+
+GET {{BriefQuest_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+//GET Root
+GET {{BriefQuest_HostAddress}}
+###
+
+// GET Config
+GET {{BriefQuest_HostAddress}}/config-check
+###
+
+//GET Briefs (200)
+GET {{BriefQuest_HostAddress}}/briefs
+###
+
+//GET briefs/1 (200)
+GET {{BriefQuest_HostAddress}}/briefs/1
+###
+
+//GET briefs/999 (404 Missing)
+GET {{BriefQuest_HostAddress}}/briefs/999
+###
+
+//CREATE a new brief (201)
+POST {{BriefQuest_HostAddress}}/briefs
+Content-Type: application/json
+
+{
+    "Title": "Game Design Brief",
+    "Text": "2. An in-memory list to hold briefs for now, with a simple counter for IDs. The database arrives in Week 2."
+}
+###
