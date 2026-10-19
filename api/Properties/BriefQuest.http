@@ -13,6 +13,10 @@ GET {{BriefQuest_HostAddress}}
 GET {{BriefQuest_HostAddress}}/config-check
 ###
 
+//GET Criterion (200)
+GET {{BriefQuest_HostAddress}}/criterion
+###
+
 //GET Briefs (200)
 GET {{BriefQuest_HostAddress}}/briefs
 ###

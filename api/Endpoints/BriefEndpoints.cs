@@ -30,6 +30,11 @@ public static class BriefEndpoints
 
            return Results.CreatedAtRoute("GetBrief", new {id = dto.ID}, dto);
         });
+
+        app.MapGet("/criterion", ()=>
+        {
+           return Results.Ok(new CriterionDTO(1, Tier.Merit, "some text", "some sentence")); 
+        });
     }
 
 }
