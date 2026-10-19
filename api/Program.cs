@@ -1,10 +1,17 @@
+using System.Reflection;
 using BriefQuest.Endpoints;
+using Google.GenAI;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+//Add Gemini Services
+var apiKey = builder.Configuration["Gemini:ApiKey"] ?? throw new Exception("Gemini key is missing!");
+
+builder.Services.AddSingleton(new Client(apiKey : apiKey));
 
 var app = builder.Build();
 
@@ -42,7 +49,9 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.MapOutcomeEndpoints();
 app.MapBriefEndpoints();
+
 
 app.Run();
 

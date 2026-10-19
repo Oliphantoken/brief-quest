@@ -38,3 +38,8 @@ Content-Type: application/json
     "Text": "2. An in-memory list to hold briefs for now, with a simple counter for IDs. The database arrives in Week 2."
 }
 ###
+
+POST {{BriefQuest_HostAddress}}/extract-requirements
+Content-Type: application/json
+
+{ "text": "Create a game design document for your game where you describe your game idea, target audience, genre, player pesrpective, controls and gameplay mechanics." }
