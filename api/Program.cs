@@ -1,6 +1,7 @@
 using System.Reflection;
 using BriefQuest.Endpoints;
-using Google.GenAI;
+using BriefQuest.Properties;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,10 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-//Add Gemini Services
-var apiKey = builder.Configuration["Gemini:ApiKey"] ?? throw new Exception("Gemini key is missing!");
-
-builder.Services.AddSingleton(new Client(apiKey : apiKey));
+// The Configure<T> method creates and stores a GeminiOptions "settings" card that combines information
+// from appsettings.json (Model) and user-settings or environment(ApiKey). This info is then retrievable
+// from anywhere with IOptions<T>.Value
+var apiKey = builder.Configuration.GetSection(GeminiOptions.SectionName);
+builder.Services.Configure<GeminiOptions>(apiKey);
 
 var app = builder.Build();
 
@@ -31,8 +33,13 @@ var summaries = new[]
 
 app.MapGet("/", () => "Brief Quest API is running!");
 
-app.MapGet("/config-check", (IConfiguration config) =>
-    string.IsNullOrEmpty(config["Gemini:ApiKey"]) ? "Key missing" : "Key found"
+/* Let IOptions retrieve the configured settings card (GeminiOptions) so its values can be checked
+// Using IOptions to get the instance is called Dependency Injection, as we don't have to care about
+// how that instance works, changes or the parameters it needs, just what it gives us access to. */
+app.MapGet("/config-check", (IOptions<GeminiOptions> options) =>{
+    var res = string.IsNullOrEmpty(options.Value.ApiKey) ? "Key missing" : "Key found";
+    return $"Model: {options.Value.Model}, key: {res}";
+    }
 );
 
 app.MapGet("/weatherforecast", () =>
@@ -49,9 +56,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-app.MapOutcomeEndpoints();
 app.MapBriefEndpoints();
-
 
 app.Run();
 
