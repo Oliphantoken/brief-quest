@@ -31,27 +31,28 @@ public class GeminiClient
     public async Task<string> SendAsync(object body)
     {
         const int maxCounter = 3;
-        for(int attempt = 1; attempt <=maxCounter; attempt++)
+        for(int attempt = 1; ; attempt++)
         {
             //The URL is relative here as the base URL is passed on from the Builder (Program.cs)
-            var response = await _httpClient.PostAsJsonAsync($"v1/models/{_geminiModel}:generateContent", body);
+            using var response = await _httpClient.PostAsJsonAsync($"v1/models/{_geminiModel}:generateContent", body);
             var text = await response.Content.ReadAsStringAsync();
             if(response.IsSuccessStatusCode) return text;
 
             int status = (int)response.StatusCode;
 
             bool retryable = status == 429 || status >= 500;
+           
+            _logger.LogWarning("Gemini returned {Status} on attempt {Attempt}.", status, attempt);
+           
             if (!retryable || attempt == maxCounter)
                 throw new GeminiUnavailableException(status, text);
 
-            _logger.LogWarning("Gemini returned {status} on attempt {attempt}.", status, attempt);
             var wait = response.Headers.RetryAfter?.Delta ?? (TimeSpan.FromSeconds(Math.Pow(2, attempt - 1))
                 + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 500)));
             
             await Task.Delay(wait);
 
         }
-        return null;
         
     }
 
