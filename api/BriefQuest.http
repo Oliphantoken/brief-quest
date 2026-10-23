@@ -17,6 +17,21 @@ GET {{BriefQuest_HostAddress}}/config-check
 GET {{BriefQuest_HostAddress}}/criterion
 ###
 
+//---------------------------------------------------------------
+//eGmini requests DO NOT DOUBLE TAP - DO NOT RESEND OFTEN, YOU WILL USE FREE TOKENS
+
+POST {{BriefQuest_HostAddress}}/briefs
+Content-Type: application/json
+
+{ "title": "Platformer brief", "text": "Create a 2D platformer prototype in Unity. Your submission must include a design document of 1500 words. To achieve a Merit, critically evaluate two similar games. To achieve a Distinction, justify your design decisions with reference to player research. Submit your project files and a 3-minute video walkthrough by Friday 12 December." }
+
+###
+
+POST {{BriefQuest_HostAddress}}/briefs/1/extract
+###
+
+//---------------------------------------------------------------
+
 //GET Briefs (200)
 GET {{BriefQuest_HostAddress}}/briefs
 ###

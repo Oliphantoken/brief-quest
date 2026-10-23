@@ -1,3 +1,3 @@
 namespace BriefQuest.Services;
 
-public record ExtractedRequirement( string Text, string SrcSentence, Tier? Tier);
+public record ExtractedRequirement( string Text, string SourceSentence, Tier? Tier);

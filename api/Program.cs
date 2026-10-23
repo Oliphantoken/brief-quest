@@ -1,19 +1,30 @@
-using System.Reflection;
 using BriefQuest.Endpoints;
-using BriefQuest.Properties;
+using BriefQuest.Options;
+using BriefQuest.Services;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-// The Configure<T> method creates and stores a GeminiOptions "settings" card that combines information
+/* The Configure<T> method creates and stores a GeminiOptions "settings" card that combines information
 // from appsettings.json (Model) and user-settings or environment(ApiKey). This info is then retrievable
-// from anywhere with IOptions<T>.Value
-var apiKey = builder.Configuration.GetSection(GeminiOptions.SectionName);
-builder.Services.Configure<GeminiOptions>(apiKey);
+// from anywhere (through DI!) with IOptions<T>.Value. Note: This card isn't created until someone first
+// asks for it, then it can be reused.*/
+var geminiSection = builder.Configuration.GetSection(GeminiOptions.SectionName);
+builder.Services.Configure<GeminiOptions>(geminiSection);
+
+//Register the GeminiClient (the phone operator)
+builder.Services.AddHttpClient<GeminiClient>( (sp, client) =>
+{
+    //The staff register (sp) is getting the "settings card" and sets up the number and the PIN.
+    var gemini = sp.GetRequiredService<IOptions<GeminiOptions>>().Value;
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    client.DefaultRequestHeaders.Add("x-goog-api-key", gemini.ApiKey);    
+});
+
+builder.Services.AddScoped<ExtractionService>();
 
 var app = builder.Build();
 
@@ -41,6 +52,11 @@ app.MapGet("/config-check", (IOptions<GeminiOptions> options) =>{
     return $"Model: {options.Value.Model}, key: {res}";
     }
 );
+
+app.MapGet("/gemini-hello", async (GeminiClient client) =>
+{
+    return await client.GenerateAsync("say hello in five words.");
+});
 
 app.MapGet("/weatherforecast", () =>
 {

@@ -1,4 +1,4 @@
-namespace BriefQuest.Properties;
+namespace BriefQuest.Options;
 
 public class GeminiOptions
 {
