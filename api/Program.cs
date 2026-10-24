@@ -80,3 +80,7 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+
+//This partial class is needed for the WebApplicationFactory to find the entry point and perform an integration test
+public partial class Program {}

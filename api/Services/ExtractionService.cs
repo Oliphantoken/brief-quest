@@ -98,7 +98,7 @@ public class ExtractionService
     /// <summary>
     /// Gets the whole raw reply, and unwraps it to return the actual text
     /// </summary>
-    private static string UnwrapText(string reply)
+    internal static string UnwrapText(string reply)     //Changed from private to internal so it can be found by XUnit
     {
         using var doc = JsonDocument.Parse(reply);
 
@@ -113,7 +113,7 @@ public class ExtractionService
         return text ?? throw new InvalidOperationException("Gemini's answer was empty.");
     }
 
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    internal static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter() }
     };
@@ -123,7 +123,7 @@ public class ExtractionService
     /// </summary>
     /// <returns>An Extraction results list</returns>
     /// <exception cref="InvalidAiOutputException"></exception>
-    private static ExtractionResults Parse(string json)
+    internal static ExtractionResults Parse(string json)
     {
         try
         {
