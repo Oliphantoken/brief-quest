@@ -1,8 +1,4 @@
 @BriefQuest_HostAddress = http://localhost:5247
-
-GET {{BriefQuest_HostAddress}}/weatherforecast/
-Accept: application/json
-
 ###
 
 //GET Root
@@ -18,7 +14,7 @@ GET {{BriefQuest_HostAddress}}/criterion
 ###
 
 //---------------------------------------------------------------
-//eGmini requests DO NOT DOUBLE TAP - DO NOT RESEND OFTEN, YOU WILL USE FREE TOKENS
+//Gemini requests DO NOT DOUBLE TAP - DO NOT RESEND OFTEN, YOU WILL USE FREE TOKENS
 
 POST {{BriefQuest_HostAddress}}/briefs
 Content-Type: application/json
@@ -31,6 +27,7 @@ POST {{BriefQuest_HostAddress}}/briefs/1/extract
 ###
 
 //---------------------------------------------------------------
+// BRIEFS API
 
 //GET Briefs (200)
 GET {{BriefQuest_HostAddress}}/briefs

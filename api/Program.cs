@@ -1,3 +1,4 @@
+using BriefQuest.Data;
 using BriefQuest.Endpoints;
 using BriefQuest.Options;
 using BriefQuest.Services;
@@ -5,41 +6,22 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add OpenApi services to the container.
 builder.Services.AddOpenApi();
-
-/* The Configure<T> method creates and stores a GeminiOptions "settings" card that combines information
-// from appsettings.json (Model) and user-settings or environment(ApiKey). This info is then retrievable
-// from anywhere (through DI!) with IOptions<T>.Value. Note: This card isn't created until someone first
-// asks for it, then it can be reused.*/
-var geminiSection = builder.Configuration.GetSection(GeminiOptions.SectionName);
-builder.Services.Configure<GeminiOptions>(geminiSection);
-
-//Register the GeminiClient (the phone operator)
-builder.Services.AddHttpClient<GeminiClient>( (sp, client) =>
-{
-    //The staff register (sp) is getting the "settings card" and sets up the number and the PIN.
-    var gemini = sp.GetRequiredService<IOptions<GeminiOptions>>().Value;
-    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
-    client.DefaultRequestHeaders.Add("x-goog-api-key", gemini.ApiKey);    
-});
-
+//Register AI configuration options and add AI client with the said options injected
+builder.AddAiClientAndConfig();
+//Add extraction service
 builder.Services.AddScoped<ExtractionService>();
+//Add database
+builder.AddBriefQuestDB();
 
+//-------------------------------------------------------------------------
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+if (app.Environment.IsDevelopment()) { app.MapOpenApi(); }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
 
 app.MapGet("/", () => "Brief Quest API is running!");
@@ -58,28 +40,11 @@ app.MapGet("/gemini-hello", async (GeminiClient client) =>
     return await client.GenerateAsync("say hello in five words.");
 });
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.MapBriefEndpoints();
+//-------------------------------------------------------------------------
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
 
 
 //This partial class is needed for the WebApplicationFactory to find the entry point and perform an integration test
