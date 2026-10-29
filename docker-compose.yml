@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: thebriefquest
       POSTGRES_DB: briefquest
     ports:
-      - "127.0.0.1:5247:5247"
+      - "127.0.0.1:5432:5432"
     volumes:
       - briefquest_data:/var/lib/postgresql
 
