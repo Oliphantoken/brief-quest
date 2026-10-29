@@ -14,7 +14,7 @@ GET {{BriefQuest_HostAddress}}/criterion
 ###
 
 //---------------------------------------------------------------
-//Gemini requests DO NOT DOUBLE TAP - DO NOT RESEND OFTEN, YOU WILL USE FREE TOKENS
+//GEMINI requests DO NOT DOUBLE TAP - DO NOT RESEND OFTEN, YOU WILL USE FREE TOKENS
 
 POST {{BriefQuest_HostAddress}}/briefs
 Content-Type: application/json
