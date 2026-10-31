@@ -23,7 +23,7 @@ Content-Type: application/json
 
 ###
 
-POST {{BriefQuest_HostAddress}}/briefs/1/extract
+POST {{BriefQuest_HostAddress}}/briefs/4/extract
 ###
 
 //---------------------------------------------------------------
@@ -34,11 +34,15 @@ GET {{BriefQuest_HostAddress}}/briefs
 ###
 
 //GET briefs/1 (200)
-GET {{BriefQuest_HostAddress}}/briefs/1
+GET {{BriefQuest_HostAddress}}/briefs/4
 ###
 
 //GET briefs/999 (404 Missing)
 GET {{BriefQuest_HostAddress}}/briefs/999
+###
+
+//GET a briefs/{id} with filtered quests
+GET {{BriefQuest_HostAddress}}/briefs/4/quests?tier=Merit&status=0
 ###
 
 //CREATE a new brief (201)
@@ -46,8 +50,8 @@ POST {{BriefQuest_HostAddress}}/briefs
 Content-Type: application/json
 
 {
-    "Title": "Game Design Brief",
-    "Text": "2. An in-memory list to hold briefs for now, with a simple counter for IDs. The database arrives in Week 2."
+    "Title": "Game Development Brief",
+    "Text": "Create a game design document for your game where you describe your game idea, target audience, genre, player pesrpective, controls and gameplay mechanics."
 }
 ###
 
@@ -55,3 +59,4 @@ POST {{BriefQuest_HostAddress}}/extract-requirements
 Content-Type: application/json
 
 { "text": "Create a game design document for your game where you describe your game idea, target audience, genre, player pesrpective, controls and gameplay mechanics." }
+###

@@ -1,4 +1,5 @@
 using BriefQuest.Services;
+using BriefQuest.Utils;
 namespace BriefQuest.Tests;
 
 public class ExtractionServiceTests

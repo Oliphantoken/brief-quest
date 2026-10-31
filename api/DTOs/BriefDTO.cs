@@ -13,3 +13,5 @@ public record BriefDTO( int ID, [Required][MaxLength(200)] string Title, [Requir
 /// <param name="Title">The title of the brief.</param>
 /// <param name="Text">The entire content of the brief.</param>
 public record CreateBriefDTO ([Required] string Title, [Required] string Text );
+
+public record BriefDetailDTO(int ID, string Title, string Text, List<OutcomeDetailDTO> Outcomes, List<QuestDTO> Quests);

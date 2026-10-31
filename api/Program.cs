@@ -35,10 +35,9 @@ app.MapGet("/config-check", (IOptions<GeminiOptions> options) =>{
     }
 );
 
-app.MapGet("/gemini-hello", async (GeminiClient client) =>
-{
-    return await client.GenerateAsync("say hello in five words.");
-});
+// app.MapGet("/gemini-hello", async (GeminiClient client) =>
+// { return await client.GenerateAsync("say hello in five words."); });
+
 
 app.MapBriefEndpoints();
 //-------------------------------------------------------------------------

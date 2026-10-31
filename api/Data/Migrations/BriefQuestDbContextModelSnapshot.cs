@@ -36,17 +36,174 @@ namespace BriefQuest.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("ExtractedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("ID");
 
                     b.ToTable("briefs");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Criterion", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("OutcomeID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceSentence")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tier")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("OutcomeID");
+
+                    b.ToTable("Criteria");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Outcome", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("BriefID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BriefID", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Outcomes");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Quest", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("BriefID")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CriterionID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FirstStep")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SourceSentence")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tier")
+                        .HasColumnType("text");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BriefID");
+
+                    b.HasIndex("CriterionID");
+
+                    b.ToTable("Quests");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Criterion", b =>
+                {
+                    b.HasOne("BriefQuest.Entities.Outcome", "Outcome")
+                        .WithMany("Criterion")
+                        .HasForeignKey("OutcomeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Outcome");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Outcome", b =>
+                {
+                    b.HasOne("BriefQuest.Entities.Brief", "Brief")
+                        .WithMany("Outcomes")
+                        .HasForeignKey("BriefID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Brief");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Quest", b =>
+                {
+                    b.HasOne("BriefQuest.Entities.Brief", "Brief")
+                        .WithMany("Quests")
+                        .HasForeignKey("BriefID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BriefQuest.Entities.Criterion", "Criterion")
+                        .WithMany()
+                        .HasForeignKey("CriterionID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Brief");
+
+                    b.Navigation("Criterion");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Brief", b =>
+                {
+                    b.Navigation("Outcomes");
+
+                    b.Navigation("Quests");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Outcome", b =>
+                {
+                    b.Navigation("Criterion");
                 });
 #pragma warning restore 612, 618
         }

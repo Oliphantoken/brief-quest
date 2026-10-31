@@ -11,5 +11,9 @@ public class Brief
     public required string Text{get; set; }
     public DateTimeOffset CreatedAt {get; set; }
     public DateTimeOffset? ArchivedAt {get; set; }
+    public DateTimeOffset? ExtractedAt {get; set; }
+
+    public List<Outcome> Outcomes {get; set; } = [];
+    public List<Quest> Quests {get; set; } = [];
 
 }

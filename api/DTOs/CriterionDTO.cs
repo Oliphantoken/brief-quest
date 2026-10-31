@@ -1,3 +1,4 @@
+using BriefQuest.Utils;
 namespace BriefQuest.DTOs;
 
 public record CriterionDTO( int ID, Tier Tier, string Text, string SourceSentence);

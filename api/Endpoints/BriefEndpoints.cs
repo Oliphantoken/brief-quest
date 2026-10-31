@@ -1,9 +1,11 @@
-using System.Collections;
 using BriefQuest.Data;
 using BriefQuest.DTOs;
+using BriefQuest.Utils;
 using BriefQuest.Entities;
 using BriefQuest.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace BriefQuest.Endpoints;
 
@@ -16,14 +18,12 @@ public static class BriefEndpoints
         //int briefCounter = 1;
         var group = app.MapGroup("/briefs");
 
-        
-
-        //GET /briefs
-        //group.MapGet("/", () => brieflist);
-        //FROM DbContext
+        //GET /briefs FROM DbContext
         group.MapGet("/", async (BriefQuestDbContext dbcontext) =>
         {
-            return await dbcontext.briefs.AsNoTracking().Select(
+            return await dbcontext.briefs.AsNoTracking()
+            .Where(b => b.ArchivedAt == null)
+            .Select(
                 b => new BriefDTO(ID: b.ID, Title: b.Title, Text: b.Text)
             ).ToListAsync();
         });
@@ -31,19 +31,27 @@ public static class BriefEndpoints
         //GET /briefs/id
         group.MapGet("/{id}", async (int id, BriefQuestDbContext dbcontext) =>
         {
-            //BriefDTO brief;
-            //IN-MEMORY LIST
-            //var brief = brieflist.FirstOrDefault(b => b.ID == id);
-
             //FROM DB IN CONTAINER
-            var brief = await dbcontext.briefs.AsNoTracking().FirstOrDefaultAsync(
-                b => b.ID == id
-            );
+            BriefDetailDTO? brief = await dbcontext.briefs.AsNoTracking()
+                .Where( b => b.ID == id && b.ArchivedAt == null)
+                .Select(b => new BriefDetailDTO(
+                    b.ID, b.Title, b.Text, 
+                    b.Outcomes.Select(
+                        o => new OutcomeDetailDTO(
+                            o.ID, o.Code, o.Text,
+                            o.Criterion.Select(
+                                c => new CriterionDTO(c.ID, c.Tier, c.Text, c.SourceSentence)
+                            ).ToList()
+                        )
+                    ).ToList(),
+                    b.Quests.Select(
+                        q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep)
+                    ).ToList())
+                )
+                .FirstOrDefaultAsync();                            
+                
 
-            return brief == null ? Results.NotFound()
-                : Results.Ok(
-                    new BriefDTO(ID: brief.ID, Title: brief.Title, Text: brief.Text)
-                );
+            return brief == null ? Results.NotFound(): Results.Ok(brief);
         }).WithName("GetBrief");
 
         //POST a new brief
@@ -70,10 +78,34 @@ public static class BriefEndpoints
             //var brief = brieflist.FirstOrDefault(b => b.ID == id);
             Brief? brief = await dbcontext.briefs.FirstOrDefaultAsync(b => b.ID == id);
             if (brief is null) return Results.NotFound();
+            if(brief.ExtractedAt != null) { //Status code 409
+                return Results.Conflict(new {message = "This brief has already been extracted."});
+            }
 
             try {
-                var json = await extraction.ExtractAsync(brief.Text);
-                return Results.Ok(json);
+                //1. Extract requirements
+                var result = await extraction.ExtractAsync(brief.Text);
+
+                //2. Create a list of quests from valid requirements
+                var quests = result.validRequirements.Select(r => new Quest
+                {
+                    BriefID = brief.ID,
+                    Text = r.Text,
+                    SourceSentence = r.SourceSentence,
+                    Tier = r.Tier
+                }).ToList();
+
+                //3. Add quests to DB context
+                dbcontext.Quests.AddRange(quests);
+
+                //4. Time stamp the brief
+                brief.ExtractedAt = DateTimeOffset.UtcNow;
+
+                //5. Save quests in DB
+                await dbcontext.SaveChangesAsync();
+
+                return Results.Ok(quests.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep)));
+
             } catch (GeminiUnavailableException ex) {
                 var status = ex.StatusCode is 429 or >= 500 ? 503 : 502;
                 return Results.Problem(title: "Looks like the AI service is unavailable at the moment. Please try again soon.", statusCode: status);
@@ -83,10 +115,24 @@ public static class BriefEndpoints
             }
         });
 
+        group.MapGet("/{id}/quests", async (int id, Tier? tier, QuestStatus? status, BriefQuestDbContext dbcontext) =>
+        {
+            var query = dbcontext.Quests.AsNoTracking().Where(q => q.BriefID == id);
+            if(tier != null) query = query.Where(q => q.Tier == tier);
+            if(status != null) query = query.Where(q => q.Status == status);
+            var quests = await query.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
+                                    .ToListAsync();
+
+                                    Debug.WriteLine("questslist:" + quests);
+
+            return quests == null ? Results.NoContent() : Results.Ok(quests);            
+        });
+
         app.MapGet("/criterion", () =>
         {
             return Results.Ok(new CriterionDTO(1, Tier.Merit, "some text", "some sentence"));
         });
+
     }
 
 }
