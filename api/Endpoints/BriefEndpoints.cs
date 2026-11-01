@@ -123,8 +123,6 @@ public static class BriefEndpoints
             var quests = await query.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
                                     .ToListAsync();
 
-                                    Debug.WriteLine("questslist:" + quests);
-
             return quests == null ? Results.NoContent() : Results.Ok(quests);            
         });
 

@@ -53,6 +53,211 @@ namespace BriefQuest.Data.Migrations
                     b.ToTable("briefs");
                 });
 
+            modelBuilder.Entity("BriefQuest.Entities.CommandWord", b =>
+                {
+                    b.Property<string>("Word")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BloomLevel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Example")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PlainMeaning")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Word");
+
+                    b.ToTable("CommandWords");
+
+                    b.HasData(
+                        new
+                        {
+                            Word = "Identify",
+                            BloomLevel = "Remember",
+                            Example = "Identify the main gameplay mechanics in your platformer prototype.",
+                            PlainMeaning = "Point out or name something specific."
+                        },
+                        new
+                        {
+                            Word = "List",
+                            BloomLevel = "Remember",
+                            Example = "List the assets you need to create for your 2D platformer.",
+                            PlainMeaning = "Give items one by one, usually in a simple sequence."
+                        },
+                        new
+                        {
+                            Word = "Describe",
+                            BloomLevel = "Understand",
+                            Example = "Describe how the player moves and jumps in your game prototype.",
+                            PlainMeaning = "Say what something is like or what happens."
+                        },
+                        new
+                        {
+                            Word = "Explain",
+                            BloomLevel = "Understand",
+                            Example = "Explain why you chose a side-scrolling camera for your platformer.",
+                            PlainMeaning = "Make something clear by saying how or why it works."
+                        },
+                        new
+                        {
+                            Word = "Summarise",
+                            BloomLevel = "Understand",
+                            Example = "Summarise the main goals of your game design document.",
+                            PlainMeaning = "Give the main points in a shorter form."
+                        },
+                        new
+                        {
+                            Word = "Compare",
+                            BloomLevel = "Analyse",
+                            Example = "Compare the movement systems in two similar platformer games.",
+                            PlainMeaning = "Say how two or more things are similar and different."
+                        },
+                        new
+                        {
+                            Word = "Contrast",
+                            BloomLevel = "Analyse",
+                            Example = "Contrast the reward systems in two mobile puzzle games.",
+                            PlainMeaning = "Focus mainly on the differences between things."
+                        },
+                        new
+                        {
+                            Word = "Analyse",
+                            BloomLevel = "Analyse",
+                            Example = "Analyse how level design, controls, and rewards affect player motivation.",
+                            PlainMeaning = "Break something into parts and explain how the parts relate."
+                        },
+                        new
+                        {
+                            Word = "Investigate",
+                            BloomLevel = "Analyse",
+                            Example = "Investigate how difficulty curves affect player retention in platformers.",
+                            PlainMeaning = "Find out more about something by researching or testing it."
+                        },
+                        new
+                        {
+                            Word = "Apply",
+                            BloomLevel = "Apply",
+                            Example = "Apply your research on player motivation to design the game’s reward system.",
+                            PlainMeaning = "Use a skill, method, or idea in a real task."
+                        },
+                        new
+                        {
+                            Word = "Demonstrate",
+                            BloomLevel = "Apply",
+                            Example = "Demonstrate that the player can complete the first level without getting stuck.",
+                            PlainMeaning = "Show that you can do something or that something works."
+                        },
+                        new
+                        {
+                            Word = "Implement",
+                            BloomLevel = "Apply",
+                            Example = "Implement the double-jump mechanic in Unity using your design document.",
+                            PlainMeaning = "Put a plan or idea into working form."
+                        },
+                        new
+                        {
+                            Word = "Experiment",
+                            BloomLevel = "Apply",
+                            Example = "Experiment with different jump heights to find the most enjoyable control feel.",
+                            PlainMeaning = "Try different options to see what works best."
+                        },
+                        new
+                        {
+                            Word = "Test",
+                            BloomLevel = "Evaluate",
+                            Example = "Test your prototype with three players and record their feedback.",
+                            PlainMeaning = "Try something to check whether it works or meets a requirement."
+                        },
+                        new
+                        {
+                            Word = "Evaluate",
+                            BloomLevel = "Evaluate",
+                            Example = "Evaluate whether your prototype meets the brief’s Merit and Distinction requirements.",
+                            PlainMeaning = "Judge how good something is using clear reasons or criteria."
+                        },
+                        new
+                        {
+                            Word = "Justify",
+                            BloomLevel = "Evaluate",
+                            Example = "Justify your decision to use pixel-art visuals based on player research.",
+                            PlainMeaning = "Give strong reasons for a decision or choice."
+                        },
+                        new
+                        {
+                            Word = "Critically evaluate",
+                            BloomLevel = "Evaluate",
+                            Example = "Critically evaluate two similar games and explain what your game will learn from each.",
+                            PlainMeaning = "Look carefully at strengths, weaknesses, and evidence before making a judgement."
+                        },
+                        new
+                        {
+                            Word = "Reflect",
+                            BloomLevel = "Evaluate",
+                            Example = "Reflect on how playtesting changed your ideas for the first level.",
+                            PlainMeaning = "Think back over what you did, what worked, and what you would change."
+                        },
+                        new
+                        {
+                            Word = "Recommend",
+                            BloomLevel = "Evaluate",
+                            Example = "Recommend improvements to the game based on your playtest results.",
+                            PlainMeaning = "Suggest the best option and explain why."
+                        },
+                        new
+                        {
+                            Word = "Prioritise",
+                            BloomLevel = "Evaluate",
+                            Example = "Prioritise the essential mechanics you must finish before the submission deadline.",
+                            PlainMeaning = "Decide which things are most important and should be done first."
+                        },
+                        new
+                        {
+                            Word = "Plan",
+                            BloomLevel = "Create",
+                            Example = "Plan the stages of your platformer prototype from research to final submission.",
+                            PlainMeaning = "Decide what you will do, when, and how."
+                        },
+                        new
+                        {
+                            Word = "Design",
+                            BloomLevel = "Create",
+                            Example = "Design a level that teaches the player the jump mechanic gradually.",
+                            PlainMeaning = "Decide how something will look, work, or be organised."
+                        },
+                        new
+                        {
+                            Word = "Develop",
+                            BloomLevel = "Create",
+                            Example = "Develop your initial game concept into a playable Unity prototype.",
+                            PlainMeaning = "Build or improve an idea over time."
+                        },
+                        new
+                        {
+                            Word = "Create",
+                            BloomLevel = "Create",
+                            Example = "Create a playable 2D platformer prototype that meets the brief.",
+                            PlainMeaning = "Make something new from your ideas, research, and skills."
+                        },
+                        new
+                        {
+                            Word = "Produce",
+                            BloomLevel = "Create",
+                            Example = "Produce a 1,500-word design document and a three-minute video walkthrough.",
+                            PlainMeaning = "Make and complete a finished piece of work."
+                        },
+                        new
+                        {
+                            Word = "Present",
+                            BloomLevel = "Create",
+                            Example = "Present your game concept and prototype progress to your tutor or class.",
+                            PlainMeaning = "Share your work or ideas clearly with an audience."
+                        });
+                });
+
             modelBuilder.Entity("BriefQuest.Entities.Criterion", b =>
                 {
                     b.Property<int>("ID")

@@ -15,9 +15,9 @@ public class Quest {
     public required string SourceSentence { get; set; }
 
     public Tier? Tier {get; set; }
-    public QuestStatus Status { get; set; } = QuestStatus.TODO;
+    public QuestStatus Status { get; set; } = QuestStatus.Todo;
 
     public string? FirstStep { get; set; }
     public DateTimeOffset CreatedAt {get; set; } = DateTimeOffset.UtcNow;
-    
+
 }
