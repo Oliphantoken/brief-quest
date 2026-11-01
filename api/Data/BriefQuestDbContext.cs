@@ -15,7 +15,6 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
     public DbSet<Outcome> Outcomes => Set<Outcome>();
     public DbSet<Criterion> Criteria => Set<Criterion>();
     public DbSet<Quest> Quests => Set<Quest>();
-
     public DbSet<CommandWord> CommandWords => Set<CommandWord>();
 
     /// <summary>

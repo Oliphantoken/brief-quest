@@ -42,7 +42,7 @@ GET {{BriefQuest_HostAddress}}/briefs/999
 ###
 
 //GET a briefs/{id} with filtered quests (tier and status)
-GET {{BriefQuest_HostAddress}}/briefs/4/quests?tier=1&status=0
+GET {{BriefQuest_HostAddress}}/briefs/4/quests?tier=Merit&status=Todo
 ###
 
 //CREATE a new brief (201)
