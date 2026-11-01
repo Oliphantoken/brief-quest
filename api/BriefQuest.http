@@ -34,7 +34,7 @@ GET {{BriefQuest_HostAddress}}/briefs
 ###
 
 //GET briefs/1 (200)
-GET {{BriefQuest_HostAddress}}/briefs/1
+GET {{BriefQuest_HostAddress}}/briefs/4
 ###
 
 //GET briefs/999 (404 Missing)
@@ -43,6 +43,11 @@ GET {{BriefQuest_HostAddress}}/briefs/999
 
 //GET a briefs/{id} with filtered quests (tier and status)
 GET {{BriefQuest_HostAddress}}/briefs/4/quests?tier=Merit&status=Todo
+###
+
+//GET briefs/4/progress
+GET {{BriefQuest_HostAddress}}/briefs/4/progress
+
 ###
 
 //CREATE a new brief (201)
@@ -55,6 +60,16 @@ Content-Type: application/json
 }
 ###
 
+//PATCH (Update) the Status of a quest in a brief with a new value (e.g. Done)
+PATCH {{BriefQuest_HostAddress}}/briefs/4/quests/4
+Content-Type: application/json
+
+{ "status": "Done" }
+
+###
+
+
+------------------------------------------------
 POST {{BriefQuest_HostAddress}}/extract-requirements
 Content-Type: application/json
 

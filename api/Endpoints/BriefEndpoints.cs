@@ -115,6 +115,7 @@ public static class BriefEndpoints
             }
         });
 
+        //GET filtered quests
         group.MapGet("/{id}/quests", async (int id, Tier? tier, QuestStatus? status, BriefQuestDbContext dbcontext) =>
         {
             var query = dbcontext.Quests.AsNoTracking().Where(q => q.BriefID == id);
@@ -125,6 +126,40 @@ public static class BriefEndpoints
 
             return quests == null ? Results.NoContent() : Results.Ok(quests);            
         });
+
+        //GET brief progress
+        group.MapGet("/{id}/progress", async (int id, BriefQuestDbContext dbcontext) =>
+        {
+            var brief = await dbcontext.briefs.AnyAsync(b => b.ID == id && b.ArchivedAt == null);
+            if(!brief) return Results.NotFound();
+
+            var progress = await dbcontext.Quests.AsNoTracking()    //1. Get quests
+                .Where(q => q.BriefID == id)                        //2. where briefID = id
+                .GroupBy(q => q.Tier)                               //3. Create groups of tiers from the quests (You'll get a dictionary <Tier?, Quest>)
+                .Select(groupOfTier => new TierProgressDTO(groupOfTier.Key, groupOfTier.Count(),    //For each group, create a TierProgressDTO
+                                            groupOfTier.Count(q=> q.Status == QuestStatus.Done)) )
+                .ToListAsync();
+
+            return Results.Ok(progress);
+
+        });
+
+        //PATCH an existing brief quest with a new status
+        group.MapPatch("/{briefID}/quests/{questID}", async (int briefID, int questID, UpdateQuestStatusDTO dto, BriefQuestDbContext dbcontext) =>
+        {
+            Quest? quest = await dbcontext.Quests.FirstOrDefaultAsync(q => q.ID == questID && q.BriefID == briefID);
+            if(quest == null) return Results.NotFound();
+
+            quest.Status = dto.Status;
+
+            await dbcontext.SaveChangesAsync();
+
+            return Results.Ok( new QuestDTO (ID: quest.ID, Text: quest.Text, SourceSentence: quest.SourceSentence,
+                                Tier: quest.Tier, Status: quest.Status, FirstStep: quest.FirstStep)
+                            );
+
+        });
+
 
         app.MapGet("/criterion", () =>
         {
