@@ -9,10 +9,10 @@ namespace BriefQuest.Entities;
 public class Outcome {
     public int ID { get; set; }
     public int BriefID { get; set; }
-    public required Brief Brief { get; set; } = null!;
+    public Brief Brief { get; set; } = null!;
     public required string Code { get; set; }
     public required string Text { get; set; }
 
-    public required List<Criterion> Criterion;
+    public List<Criterion> Criteria {get; set; } = [];
 
 }

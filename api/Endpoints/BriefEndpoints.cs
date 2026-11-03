@@ -39,7 +39,7 @@ public static class BriefEndpoints
                     b.Outcomes.Select(
                         o => new OutcomeDetailDTO(
                             o.ID, o.Code, o.Text,
-                            o.Criterion.Select(
+                            o.Criteria.Select(
                                 c => new CriterionDTO(c.ID, c.Tier, c.Text, c.SourceSentence)
                             ).ToList()
                         )
@@ -73,46 +73,81 @@ public static class BriefEndpoints
         });
 
         //POST new brief to Gemini
-        group.MapPost("/{id}/extract", async (int id, BriefQuestDbContext dbcontext, ExtractionService extraction) =>
+        group.MapPost("/{id}/extract", async (int id, BriefQuestDbContext dbcontext, ExtractionService extractionService) =>
         {
-            //var brief = brieflist.FirstOrDefault(b => b.ID == id);
-            Brief? brief = await dbcontext.briefs.FirstOrDefaultAsync(b => b.ID == id);
+            Brief? brief = await dbcontext.briefs.FirstOrDefaultAsync(b => b.ID == id && b.ArchivedAt == null);
             if (brief is null) return Results.NotFound();
             if(brief.ExtractedAt != null) { //Status code 409
                 return Results.Conflict(new {message = "This brief has already been extracted."});
             }
 
+            ValidatedExtraction extractedItems;
+
             try {
-                //1. Extract requirements
-                var result = await extraction.ExtractAsync(brief.Text);
-
-                //2. Create a list of quests from valid requirements
-                var quests = result.validRequirements.Select(r => new Quest
-                {
-                    BriefID = brief.ID,
-                    Text = r.Text,
-                    SourceSentence = r.SourceSentence,
-                    Tier = r.Tier
-                }).ToList();
-
-                //3. Add quests to DB context
-                dbcontext.Quests.AddRange(quests);
-
-                //4. Time stamp the brief
-                brief.ExtractedAt = DateTimeOffset.UtcNow;
-
-                //5. Save quests in DB
-                await dbcontext.SaveChangesAsync();
-
-                return Results.Ok(quests.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep)));
+                //1. Extract brief items
+                extractedItems = await extractionService.ExtractAsync(brief.Text);
 
             } catch (GeminiUnavailableException ex) {
                 var status = ex.StatusCode is 429 or >= 500 ? 503 : 502;
                 return Results.Problem(title: "Looks like the AI service is unavailable at the moment. Please try again soon.", statusCode: status);
             } catch (InvalidAiOutputException)
-            { //My insepctor rejected the answer from the server
+            { //My inspector rejected the answer from the server
                 return Results.Problem(title: "The AI's answer could not be verified. Please try again.", statusCode: 502);
             }
+
+            var outcomeEntities = new List<Outcome>();
+            var quests = new List<Quest>();
+
+            //2. Convert JSON brief items into C# entities. Start with JSON Outcomes list.
+            foreach(var o in extractedItems.Outcomes)
+            {
+                //For every JSON outcome object, create an Outcome entity
+                var outcome = new Outcome {BriefID = brief.ID, Code = o.Code, Text = o.Text };
+                
+                //For every JSON Criterion object, create a criterion entity
+                foreach(var c in o.Criteria)
+                {
+                    //Create a criterion entity from the extracted brief items
+                    var criterion = new Criterion { Tier = c.Tier!.Value, Text = c.Text, SourceSentence = c.SourceSentence };
+                    //Add it to the new outcome entity
+                    outcome.Criteria.Add(criterion);
+
+                    //Create a quest entity for every criteria and add to the quests list
+                    quests.Add(new Quest { BriefID = brief.ID, Criterion = criterion, Text = c.Text,
+                                            SourceSentence = c.SourceSentence, Tier = c.Tier});
+                }
+
+                //The new outcome entity filled with its criteria entities is added to the outcomesEntities list
+                outcomeEntities.Add(outcome);
+            }
+
+            //2.b Create a quest for every requirement as well and add to the quests list
+            foreach(var r in extractedItems.Requirements)
+            {
+                quests.Add(new Quest { BriefID = brief.ID, Text = r.Text, SourceSentence = r.SourceSentence, Tier = r.Tier });
+            }
+
+            //3. Add outcomes and quests to DB context
+            dbcontext.Outcomes.AddRange(outcomeEntities);
+            dbcontext.Quests.AddRange(quests);
+
+            //4. Time stamp the brief
+            brief.ExtractedAt = DateTimeOffset.UtcNow;
+
+            //5. Save quests in DB
+            await dbcontext.SaveChangesAsync();
+
+            //6. Create the DTOs to send back to the client
+            var outcomeDTOs = outcomeEntities.Select(o => new OutcomeDetailDTO(o.ID, o.Code, o.Text, 
+                        o.Criteria.Select(c => new CriterionDTO(c.ID, c.Tier, c.Text, c.SourceSentence))
+                        .ToList()))
+                    .ToList();
+            var questDTOs = quests.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
+                                    .ToList();
+
+            //7. Go drink some water after this process
+            return Results.Ok(new ExtractionSummaryDTO(outcomeDTOs, questDTOs, extractedItems.Rejected));
+
         });
 
         //GET filtered quests

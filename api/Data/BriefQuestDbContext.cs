@@ -33,7 +33,7 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
         modelBuilder.Entity<Outcome>().HasIndex(o => new {o.BriefID, o.Code }).IsUnique();
 
         modelBuilder.Entity<Criterion>()
-            .HasOne(c => c.Outcome).WithMany(o => o.Criterion)
+            .HasOne(c => c.Outcome).WithMany(o => o.Criteria)
             .HasForeignKey(c => c.OutcomeID)
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<Criterion>().Property(c => c.Tier).HasConversion<string>();

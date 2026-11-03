@@ -362,7 +362,7 @@ namespace BriefQuest.Data.Migrations
             modelBuilder.Entity("BriefQuest.Entities.Criterion", b =>
                 {
                     b.HasOne("BriefQuest.Entities.Outcome", "Outcome")
-                        .WithMany("Criterion")
+                        .WithMany("Criteria")
                         .HasForeignKey("OutcomeID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -408,7 +408,7 @@ namespace BriefQuest.Data.Migrations
 
             modelBuilder.Entity("BriefQuest.Entities.Outcome", b =>
                 {
-                    b.Navigation("Criterion");
+                    b.Navigation("Criteria");
                 });
 #pragma warning restore 612, 618
         }
