@@ -114,3 +114,5 @@ CREATE INDEX ix_quests_brief_id    ON quests(brief_id);
 ## Change log
 
 - v1: first agreed version (Day 6).
+- Day 8: added command_words; outcomes and criteria to be filled from Day 9
+- Day 9: extraction now saves outcomes, criteria, and quests linked to criteria.
