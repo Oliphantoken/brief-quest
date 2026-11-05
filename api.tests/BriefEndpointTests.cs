@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace BriefQuest.Tests;
 
-public class BriefEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public class BriefEndpointTests : IClassFixture<ApiFactory>
 {
     private readonly HttpClient _client;
-    public BriefEndpointTests(WebApplicationFactory<Program> factory) => _client = factory.CreateClient();
+    public BriefEndpointTests(ApiFactory factory) => _client = factory.CreateClient();
 
     [Fact]
     public async Task PostThenGet_ReturnsTheBrief()
