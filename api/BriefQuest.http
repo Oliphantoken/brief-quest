@@ -79,3 +79,26 @@ Content-Type: application/json
 
 { "text": "Create a game design document for your game where you describe your game idea, target audience, genre, player pesrpective, controls and gameplay mechanics." }
 ###
+
+------------------------------------------------
+//Authentication and authorisation
+
+### register
+POST {{BriefQuest_HostAddress}}/account/register
+Content-Type: application/json
+
+{ "email": "for@example.com", "password": "Test-pass-123!" }
+
+### login
+# @name login
+POST {{BriefQuest_HostAddress}}/account/login
+Content-Type: application/json
+
+{ "email": "for@example.com", "password": "Test-pass-123!" }
+
+### whoami with the token
+GET {{BriefQuest_HostAddress}}/whoami
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### whoami without a token
+GET {{BriefQuest_HostAddress}}/whoami

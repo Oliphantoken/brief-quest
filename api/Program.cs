@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using BriefQuest.Data;
 using BriefQuest.Endpoints;
+using BriefQuest.Entities;
 using BriefQuest.Options;
 using BriefQuest.Services;
 using Microsoft.Extensions.Options;
@@ -14,6 +16,10 @@ builder.AddAiClientAndConfig();
 builder.Services.AddScoped<ExtractionService>();
 //Add database
 builder.AddBriefQuestDB();
+//Add authorisation and authentication/identity endpoints and stores
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+    .AddEntityFrameworkStores<BriefQuestDbContext>();
 
 //-------------------------------------------------------------------------
 var app = builder.Build();
@@ -22,6 +28,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment()) { app.MapOpenApi(); }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication(); //ID check: who are you?
+app.UseAuthorization(); //the guest list: are you allowed in?
+app.MapGroup("/account").MapIdentityApi<AppUser>();
+
+app.MapGet("/whoami", (ClaimsPrincipal user) => user.Identity?.Name)
+    .RequireAuthorization();
 
 
 app.MapGet("/", () => "Brief Quest API is running!");
