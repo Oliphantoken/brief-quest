@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using BriefQuest.Entities;
 using BriefQuest.Utils;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace BriefQuest.Data;
 
@@ -8,7 +9,7 @@ namespace BriefQuest.Data;
 /// A database helper that opens the db and runs queries on the list of briefs you host. You have to tell it how to connect to connect to your db, which you do through the dbContextOptions.
 /// </summary>
 /// <param name="options">Context options hold info on db info credentials. It's injected into the parent db context. </param>
-public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) : DbContext(options)
+public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) : IdentityDbContext<AppUser>(options)
 {
     //Define the list of briefs
     public DbSet<Brief> briefs => Set<Brief>();    
@@ -24,6 +25,8 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Brief>().Property(b=>b.Title).HasMaxLength(200);
 
         modelBuilder.Entity<Outcome>()
