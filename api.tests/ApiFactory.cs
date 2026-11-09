@@ -1,3 +1,5 @@
+using System.Net.Http.Json;
+using System.Text.Json;
 using BriefQuest.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +21,33 @@ public class ApiFactory : WebApplicationFactory<Program>
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BriefQuestDbContext>();
         db.Database.Migrate();
-        db.briefs.ExecuteDelete();
+        db.Users.ExecuteDelete();
         return host;
     }
+
+    //Tests need to log users in. Get the Access Token here
+    public async Task<string> RegisterAndLoginAsync(string email, string password="Test-pass-123!")
+    {
+        using var reg = CreateClient();
+
+        await reg.PostAsJsonAsync("/account/register", new {email, password}); //login
+
+        var login = await reg.PostAsJsonAsync("/account/login?useCookies=false&useSessionCookies=false", new {email, password});
+
+        var body = await login.Content.ReadFromJsonAsync<JsonElement>();
+
+        return body.GetProperty("accessToken").GetString()!;
+    }
+    
+
+    public HttpClient CreateAuthenticatedClient(string token)
+    {
+        var client = CreateClient();
+
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        return client;
+    }
+
+
 }

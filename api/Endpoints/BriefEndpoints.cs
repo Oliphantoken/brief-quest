@@ -4,36 +4,42 @@ using BriefQuest.Utils;
 using BriefQuest.Entities;
 using BriefQuest.Services;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace BriefQuest.Endpoints;
 
 public static class BriefEndpoints
 {
 
+    static string CurrentUserID(ClaimsPrincipal user) =>
+    user.FindFirstValue(ClaimTypes.NameIdentifier)
+    ?? throw new InvalidOperationException("No user ID in token.");
+
     public static void MapBriefEndpoints(this WebApplication app)
     {
-        //var brieflist = new List<BriefDTO>();
-        //int briefCounter = 1;
-        var group = app.MapGroup("/briefs");
+        //The "group" is locked behind an authentication check ("are you allowed to be here?")
+        var briefGroup = app.MapGroup("/briefs").RequireAuthorization();
+        var accountGroup = app.MapGroup("/account").RequireAuthorization();
 
         //GET /briefs FROM DbContext
-        group.MapGet("/", async (BriefQuestDbContext dbcontext) =>
+        briefGroup.MapGet("/", async (ClaimsPrincipal user, BriefQuestDbContext dbcontext) =>
         {
+            var userID = CurrentUserID(user);
             return await dbcontext.briefs.AsNoTracking()
-            .Where(b => b.ArchivedAt == null)
+            .Where(b => b.ArchivedAt == null && b.OwnerID == userID)
             .Select(
                 b => new BriefDTO(ID: b.ID, Title: b.Title, Text: b.Text)
             ).ToListAsync();
-        });
+        }).RequireAuthorization();
 
         //GET /briefs/id
-        group.MapGet("/{id}", async (int id, BriefQuestDbContext dbcontext) =>
+        briefGroup.MapGet("/{id}", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext) =>
         {
+            var userID = CurrentUserID(user);
             //FROM DB IN CONTAINER
             BriefDetailDTO? brief = await dbcontext.briefs.AsNoTracking()
-                .Where( b => b.ID == id && b.ArchivedAt == null)
+                .Where(b => b.ID == id && b.OwnerID == userID && b.ArchivedAt == null)
                 .Select(b => new BriefDetailDTO(
                     b.ID, b.Title, b.Text, 
                     b.Outcomes.Select(
@@ -55,14 +61,12 @@ public static class BriefEndpoints
         }).WithName("GetBrief");
 
         //POST a new brief
-        group.MapPost("/", async (CreateBriefDTO newDTO, BriefQuestDbContext dbcontext) =>
+        briefGroup.MapPost("/", async (ClaimsPrincipal user, CreateBriefDTO newDTO, BriefQuestDbContext dbcontext) =>
         {
-            //var dto = new BriefDTO(briefCounter, newDTO.Title, newDTO.Text);
-            //briefCounter++;
-            //brieflist.Add(dto);
+            var userID = CurrentUserID(user);
 
             //Create entity instance
-            var brief = new Brief { Title = newDTO.Title, Text = newDTO.Text, CreatedAt = DateTimeOffset.UtcNow };
+            var brief = new Brief { OwnerID = userID, Title = newDTO.Title, Text = newDTO.Text, CreatedAt = DateTimeOffset.UtcNow };
             //Add entity to the DB list
             dbcontext.briefs.Add(brief);
             //Save DB changes
@@ -73,16 +77,18 @@ public static class BriefEndpoints
         });
 
         //POST new brief to Gemini
-        group.MapPost("/{id}/extract", async (int id, BriefQuestDbContext dbcontext, ExtractionService extractionService) =>
+        briefGroup.MapPost("/{id}/extract", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext, ExtractionService extractionService) =>
         {
-            Brief? brief = await dbcontext.briefs.FirstOrDefaultAsync(b => b.ID == id && b.ArchivedAt == null);
+            var userID = CurrentUserID(user);
+
+            Brief? brief = await dbcontext.briefs.FirstOrDefaultAsync(b => b.OwnerID == userID && b.ID == id && b.ArchivedAt == null);
             if (brief is null) return Results.NotFound();
             if(brief.ExtractedAt != null) { //Status code 409
                 return Results.Conflict(new {message = "This brief has already been extracted."});
             }
 
+            //Extraction service
             ValidatedExtraction extractedItems;
-
             try {
                 //1. Extract brief items
                 extractedItems = await extractionService.ExtractAsync(brief.Text);
@@ -95,6 +101,7 @@ public static class BriefEndpoints
                 return Results.Problem(title: "The AI's answer could not be verified. Please try again.", statusCode: 502);
             }
 
+            //Organise extraction into lists
             var outcomeEntities = new List<Outcome>();
             var quests = new List<Quest>();
 
@@ -127,14 +134,14 @@ public static class BriefEndpoints
                 quests.Add(new Quest { BriefID = brief.ID, Text = r.Text, SourceSentence = r.SourceSentence, Tier = r.Tier });
             }
 
-            //3. Add outcomes and quests to DB context
+            //3. Add outcomes and quests lists to DB context
             dbcontext.Outcomes.AddRange(outcomeEntities);
             dbcontext.Quests.AddRange(quests);
 
             //4. Time stamp the brief
             brief.ExtractedAt = DateTimeOffset.UtcNow;
 
-            //5. Save quests in DB
+            //5. Save everything to the DB
             await dbcontext.SaveChangesAsync();
 
             //6. Create the DTOs to send back to the client
@@ -151,9 +158,10 @@ public static class BriefEndpoints
         });
 
         //GET filtered quests
-        group.MapGet("/{id}/quests", async (int id, Tier? tier, QuestStatus? status, BriefQuestDbContext dbcontext) =>
+        briefGroup.MapGet("/{id}/quests", async (ClaimsPrincipal user, int id, Tier? tier, QuestStatus? status, BriefQuestDbContext dbcontext) =>
         {
-            var query = dbcontext.Quests.AsNoTracking().Where(q => q.BriefID == id);
+            var userID = CurrentUserID(user);
+            var query = dbcontext.Quests.AsNoTracking().Where(q => q.BriefID == id && q.Brief.OwnerID == userID);
             if(tier != null) query = query.Where(q => q.Tier == tier);
             if(status != null) query = query.Where(q => q.Status == status);
             var quests = await query.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
@@ -163,9 +171,10 @@ public static class BriefEndpoints
         });
 
         //GET brief progress
-        group.MapGet("/{id}/progress", async (int id, BriefQuestDbContext dbcontext) =>
+        briefGroup.MapGet("/{id}/progress", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext) =>
         {
-            var brief = await dbcontext.briefs.AnyAsync(b => b.ID == id && b.ArchivedAt == null);
+            var userID = CurrentUserID(user);
+            var brief = await dbcontext.briefs.AnyAsync(b => b.ID == id && b.OwnerID == userID && b.ArchivedAt == null);
             if(!brief) return Results.NotFound();
 
             var progress = await dbcontext.Quests.AsNoTracking()    //1. Get quests
@@ -180,9 +189,10 @@ public static class BriefEndpoints
         });
 
         //PATCH an existing brief quest with a new status
-        group.MapPatch("/{briefID}/quests/{questID}", async (int briefID, int questID, UpdateQuestStatusDTO dto, BriefQuestDbContext dbcontext) =>
+        briefGroup.MapPatch("/{briefID}/quests/{questID}", async (ClaimsPrincipal user, int briefID, int questID, UpdateQuestStatusDTO dto, BriefQuestDbContext dbcontext) =>
         {
-            Quest? quest = await dbcontext.Quests.FirstOrDefaultAsync(q => q.ID == questID && q.BriefID == briefID);
+            var userID = CurrentUserID(user);
+            Quest? quest = await dbcontext.Quests.FirstOrDefaultAsync(q => q.ID == questID && q.BriefID == briefID && q.Brief.OwnerID == userID );
             if(quest == null) return Results.NotFound();
 
             quest.Status = dto.Status;
@@ -195,8 +205,17 @@ public static class BriefEndpoints
 
         });
 
+        accountGroup.MapDelete("/", async (ClaimsPrincipal user, UserManager<AppUser> userManager) => {
+            var appUser = await userManager.GetUserAsync(user);
+            if (appUser == null) return Results.NotFound();
 
-        app.MapGet("/criterion", () =>
+            var result = await userManager.DeleteAsync(appUser);
+            return result.Succeeded ? Results.NoContent() : Results.Problem();
+            
+        }).RequireAuthorization();
+
+
+        app.MapGet("/criterion", (ClaimsPrincipal user) =>
         {
             return Results.Ok(new CriterionDTO(1, Tier.Merit, "some text", "some sentence"));
         });

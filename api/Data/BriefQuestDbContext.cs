@@ -29,6 +29,11 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
 
         modelBuilder.Entity<Brief>().Property(b=>b.Title).HasMaxLength(200);
 
+        modelBuilder.Entity<Brief>()
+            .HasOne(b => b.Owner).WithMany()
+            .HasForeignKey(b =>b.OwnerID)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Outcome>()
             .HasOne(o => o.Brief).WithMany(b => b.Outcomes)
             .HasForeignKey(o => o.BriefID)

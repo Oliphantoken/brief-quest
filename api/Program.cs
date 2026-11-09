@@ -4,6 +4,7 @@ using BriefQuest.Endpoints;
 using BriefQuest.Entities;
 using BriefQuest.Options;
 using BriefQuest.Services;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,11 +19,19 @@ builder.Services.AddScoped<ExtractionService>();
 builder.AddBriefQuestDB();
 //Add authorisation and authentication/identity endpoints and stores
 builder.Services.AddAuthorization();
+//
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<BriefQuestDbContext>();
+//Limit the token expiry time
+builder.Services.ConfigureAll<BearerTokenOptions>(options =>
+{
+   options.BearerTokenExpiration = TimeSpan.FromMinutes(10);
+   options.RefreshTokenExpiration = TimeSpan.FromMinutes(60); 
+});
 
 //-------------------------------------------------------------------------
 var app = builder.Build();
+//-------------------------------------------------------------------------
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) { app.MapOpenApi(); }
@@ -46,16 +55,17 @@ app.MapGet("/config-check", (IOptions<GeminiOptions> options) =>{
     var res = string.IsNullOrEmpty(options.Value.ApiKey) ? "Key missing" : "Key found";
     return $"Model: {options.Value.Model}, key: {res}";
     }
-);
+).RequireAuthorization();
 
 // app.MapGet("/gemini-hello", async (GeminiClient client) =>
 // { return await client.GenerateAsync("say hello in five words."); });
 
 
 app.MapBriefEndpoints();
-//-------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------
 app.Run();
+//-------------------------------------------------------------------------
 
 
 

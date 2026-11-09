@@ -103,6 +103,10 @@ namespace BriefQuest.Data.Migrations
                     b.Property<DateTimeOffset?>("ExtractedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("OwnerID")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("text");
@@ -114,7 +118,9 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("briefs");
+                    b.HasIndex("OwnerID");
+
+                    b.ToTable("briefs", (string)null);
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.CommandWord", b =>
@@ -135,7 +141,7 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasKey("Word");
 
-                    b.ToTable("CommandWords");
+                    b.ToTable("CommandWords", (string)null);
 
                     b.HasData(
                         new
@@ -349,7 +355,7 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasIndex("OutcomeID");
 
-                    b.ToTable("Criteria");
+                    b.ToTable("Criteria", (string)null);
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.Outcome", b =>
@@ -376,7 +382,7 @@ namespace BriefQuest.Data.Migrations
                     b.HasIndex("BriefID", "Code")
                         .IsUnique();
 
-                    b.ToTable("Outcomes");
+                    b.ToTable("Outcomes", (string)null);
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.Quest", b =>
@@ -420,7 +426,7 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasIndex("CriterionID");
 
-                    b.ToTable("Quests");
+                    b.ToTable("Quests", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -553,6 +559,17 @@ namespace BriefQuest.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.Brief", b =>
+                {
+                    b.HasOne("BriefQuest.Entities.AppUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.Criterion", b =>

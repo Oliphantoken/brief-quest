@@ -1,29 +1,48 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using BriefQuest.DTOs;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace BriefQuest.Tests;
 
-public class BriefEndpointTests : IClassFixture<ApiFactory>
+[Collection("Integration")]
+public class BriefEndpointTests
 {
-    private readonly HttpClient _client;
-    public BriefEndpointTests(ApiFactory factory) => _client = factory.CreateClient();
+    private readonly ApiFactory _factory;
+    public BriefEndpointTests(ApiFactory factory) => _factory = factory;
 
     [Fact]
-    public async Task PostThenGet_ReturnsTheBrief()
+    public async Task PostNewBriefThenGet_ReturnsTheBrief()
     {
-        var post = await _client.PostAsJsonAsync("/briefs", new CreateBriefDTO("Test brief", "Some text."));
+        //Generate a new random email name, so it doesn't clash with other tests
+        var email = $"test-{Guid.NewGuid():N}@example.com";
+
+        //1. authenticate
+        var token = await _factory.RegisterAndLoginAsync(email);
+        var client = _factory.CreateAuthenticatedClient(token);
+
+        //2. Create a new brief and check you get 201 status code
+        var post = await client.PostAsJsonAsync("/briefs", new{title="Test brief", text="Some text."});
         Assert.Equal(HttpStatusCode.Created, post.StatusCode);
 
-        var get = await _client.GetAsync(post.Headers.Location);
+        //3. Get the brief and check you get 200 status code
+        var get = await client.GetAsync(post.Headers.Location);
         Assert.Equal(HttpStatusCode.OK, get.StatusCode);
     }
 
     [Fact]
-    public async Task Get_ReturnsNotFound_ForMissingBrief()
+    public async Task GetBrief_ReturnsNotFound_ForMissingBrief()
     {
-        var get = await _client.GetAsync("/briefs/99999");
+        //Generate a new random email name, so it doesn't clash with other tests
+        var email = $"test-{Guid.NewGuid():N}@example.com";
+
+        //1. Authenticate
+        var token = await _factory.RegisterAndLoginAsync(email);
+        var client = _factory.CreateAuthenticatedClient(token);
+
+        //2. Get brief with impossible id
+        var get = await client.GetAsync("/briefs/99999");
+
+        //3 Check you get 404 status code
         Assert.Equal(HttpStatusCode.NotFound, get.StatusCode);
     }
+
 }

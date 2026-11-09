@@ -16,4 +16,7 @@ public class Brief
     public List<Outcome> Outcomes {get; set; } = [];
     public List<Quest> Quests {get; set; } = [];
 
+    public required string OwnerID { get; set; }
+    public AppUser Owner { get; set; } = null!;
+
 }

@@ -1,5 +1,6 @@
 @BriefQuest_HostAddress = http://localhost:5247
 ###
+//5247
 
 GET http://localhost:8080/briefs
 ###
@@ -33,28 +34,38 @@ POST {{BriefQuest_HostAddress}}/briefs/26/extract
 // BRIEFS API
 
 //GET Briefs (200)
-GET {{BriefQuest_HostAddress}}/briefs
+GET {{BriefQuest_HostAddress}}/briefs/
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
 ###
 
 //GET briefs/1 (200)
-GET {{BriefQuest_HostAddress}}/briefs/11
+GET {{BriefQuest_HostAddress}}/briefs/41
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
 ###
 
 //GET briefs/999 (404 Missing)
 GET {{BriefQuest_HostAddress}}/briefs/999
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
 ###
 
 //GET a briefs/{id} with filtered quests (tier and status)
 GET {{BriefQuest_HostAddress}}/briefs/4/quests?tier=Merit&status=Todo
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
 ###
 
 //GET briefs/4/progress
 GET {{BriefQuest_HostAddress}}/briefs/10/progress
+Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ###
 
 //CREATE a new brief (201)
 POST {{BriefQuest_HostAddress}}/briefs
+Authorization: Bearer {{login.response.body.$.accessToken}}
 Content-Type: application/json
 
 {
@@ -65,16 +76,22 @@ Content-Type: application/json
 ###
 
 //PATCH (Update) the Status of a quest in a brief with a new value (e.g. Done)
-PATCH {{BriefQuest_HostAddress}}/briefs/4/quests/4
+PATCH {{BriefQuest_HostAddress}}/briefs/10/quests/4
+Authorization: Bearer {{login.response.body.$.accessToken}}
 Content-Type: application/json
 
 { "status": "Done" }
 
 ###
 
+DELETE {{BriefQuest_HostAddress}}/account
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+###
 
 ------------------------------------------------
 POST {{BriefQuest_HostAddress}}/extract-requirements
+Authorization: Bearer {{login.response.body.$.accessToken}}
 Content-Type: application/json
 
 { "text": "Create a game design document for your game where you describe your game idea, target audience, genre, player pesrpective, controls and gameplay mechanics." }
@@ -87,14 +104,14 @@ Content-Type: application/json
 POST {{BriefQuest_HostAddress}}/account/register
 Content-Type: application/json
 
-{ "email": "for@example.com", "password": "Test-pass-123!" }
+{ "email": "TODELETE@example.com", "password": "Test-pass-123!" }
 
 ### login
 # @name login
 POST {{BriefQuest_HostAddress}}/account/login
 Content-Type: application/json
 
-{ "email": "for@example.com", "password": "Test-pass-123!" }
+{ "email": "TODELETE@example.com", "password": "Test-pass-123!" }
 
 ### whoami with the token
 GET {{BriefQuest_HostAddress}}/whoami
