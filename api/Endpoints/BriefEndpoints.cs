@@ -77,7 +77,7 @@ public static class BriefEndpoints
         });
 
         //POST new brief to Gemini
-        briefGroup.MapPost("/{id}/extract", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext, ExtractionService extractionService) =>
+        briefGroup.MapPost("/{id}/extract", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext, UsageCapService capService, ExtractionService extractionService) =>
         {
             var userID = CurrentUserID(user);
 
@@ -85,6 +85,13 @@ public static class BriefEndpoints
             if (brief is null) return Results.NotFound();
             if(brief.ExtractedAt != null) { //Status code 409
                 return Results.Conflict(new {message = "This brief has already been extracted."});
+            }
+
+            //Check you have enough quota to extract
+            var allowedToExtract = await capService.TryIncrementAsync(userID);
+            if (!allowedToExtract)
+            {
+                return Results.Problem(title: "You have reached today's AI limit. Please try again tomorrow.", statusCode: 429);
             }
 
             //Extraction service

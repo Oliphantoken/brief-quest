@@ -120,7 +120,7 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasIndex("OwnerID");
 
-                    b.ToTable("briefs", (string)null);
+                    b.ToTable("briefs");
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.CommandWord", b =>
@@ -141,7 +141,7 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasKey("Word");
 
-                    b.ToTable("CommandWords", (string)null);
+                    b.ToTable("CommandWords");
 
                     b.HasData(
                         new
@@ -355,7 +355,7 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasIndex("OutcomeID");
 
-                    b.ToTable("Criteria", (string)null);
+                    b.ToTable("Criteria");
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.Outcome", b =>
@@ -382,7 +382,7 @@ namespace BriefQuest.Data.Migrations
                     b.HasIndex("BriefID", "Code")
                         .IsUnique();
 
-                    b.ToTable("Outcomes", (string)null);
+                    b.ToTable("Outcomes");
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.Quest", b =>
@@ -426,7 +426,23 @@ namespace BriefQuest.Data.Migrations
 
                     b.HasIndex("CriterionID");
 
-                    b.ToTable("Quests", (string)null);
+                    b.ToTable("Quests");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.UsageCounter", b =>
+                {
+                    b.Property<string>("OwnerID")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("Day")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.HasKey("OwnerID", "Day");
+
+                    b.ToTable("UsageCounters");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -610,6 +626,17 @@ namespace BriefQuest.Data.Migrations
                     b.Navigation("Brief");
 
                     b.Navigation("Criterion");
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.UsageCounter", b =>
+                {
+                    b.HasOne("BriefQuest.Entities.AppUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

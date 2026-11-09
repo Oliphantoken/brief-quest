@@ -28,6 +28,8 @@ builder.Services.ConfigureAll<BearerTokenOptions>(options =>
    options.BearerTokenExpiration = TimeSpan.FromMinutes(10);
    options.RefreshTokenExpiration = TimeSpan.FromMinutes(60); 
 });
+//Register AI usage counter service
+builder.Services.AddScoped<UsageCapService>();
 
 //-------------------------------------------------------------------------
 var app = builder.Build();

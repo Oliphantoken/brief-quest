@@ -17,6 +17,7 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
     public DbSet<Criterion> Criteria => Set<Criterion>();
     public DbSet<Quest> Quests => Set<Quest>();
     public DbSet<CommandWord> CommandWords => Set<CommandWord>();
+    public DbSet<UsageCounter> UsageCounters => Set<UsageCounter>();
 
     /// <summary>
     /// On creating a model, specify any rules it has and relationships to other entities by
@@ -88,6 +89,13 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
             new CommandWord { Word = "Present", PlainMeaning = "Share your work or ideas clearly with an audience.", BloomLevel = BloomLevel.Create, Example = "Present your game concept and prototype progress to your tutor or class." }
 
         );
+
+        modelBuilder.Entity<UsageCounter>()
+            .HasKey( u => new {u.OwnerID, u.Day} );
+        modelBuilder.Entity<UsageCounter>()
+            .HasOne(u => u.Owner).WithMany()
+            .HasForeignKey(u => u.OwnerID)
+            .OnDelete(DeleteBehavior.Cascade);
 
     }
 
