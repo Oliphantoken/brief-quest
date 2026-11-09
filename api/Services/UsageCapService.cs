@@ -4,6 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BriefQuest.Services;
 
+/// <summary>
+/// A service to keep a counter for how many times the user has extracted a brief during the day.
+/// There's a daily limit per user (currently 5)
+/// </summary>
+/// <param name="dbContext"></param>
 public class UsageCapService(BriefQuestDbContext dbContext)
 {
     private const int DailyLimit = 5;

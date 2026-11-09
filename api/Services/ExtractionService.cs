@@ -68,20 +68,34 @@ public class ExtractionService
         """;
 
     private ILogger<ExtractionService> _logger;
-    public ExtractionService(GeminiClient client, ILogger<ExtractionService> logger)
+    private AICacheService _briefCache;
+    public ExtractionService(GeminiClient client, ILogger<ExtractionService> logger, AICacheService briefcache)
     {
         _client = client;
         _logger = logger;
+        _briefCache = briefcache;
     }
 
     /// <summary>
-    /// Puts the brief text into a json body and sends it through the gemini client,
+    /// Checks if the brief is cached first, and returns what's in the memory. Otherwise
+    /// it puts the brief text into a json body and sends it through the gemini client,
     /// unwraps, parses/validates the reply.
+    /// 
+    /// PRIVACY: brief text is sent to the Gemini API. Free-tier prompts may be used by Google.
     /// </summary>
     /// <param name="briefText">The entire brief text</param>
-    /// <returns>A new ExtractionResultDTO with a list of valid requirements and a count of rejected ones (the remainder).</returns>
-    public async Task<ValidatedExtraction> ExtractAsync(string briefText)
+    /// <returns>A new ValidatedExtraction with a list of valid outcomes, criteria and requirements and a total count of rejected ones (the remainder).</returns>
+    public async Task<ValidatedExtraction> ExtractAsync(string briefText, string userID)
     {
+        //Check if the brief is in memory before extracting it
+        var hash = AICacheService.HashBrief(briefText);
+        var cachedBrief = await _briefCache.GetAsync(userID, hash);
+        if(cachedBrief != null)
+        {
+            _logger.LogInformation("===================>>>> Cache hit for brief hash {Hash} - RETURNING CACHED BRIEF", hash[..8]);
+            return Validate(Parse(cachedBrief), briefText);
+        }
+
         //1. Create the body structure with the request
         var body = new
         {
@@ -96,14 +110,20 @@ public class ExtractionService
 
         //2. Send the request to the client and get the response
         var reply = await _client.SendAsync(body);
+        
+        //Unwrap the response to get the actual extraction text
+        var rawText = UnwrapText(reply);
 
-        //Unwrap the response to get the reply, and convert it into a C# API object
-        ExtractionResults parsedReply = Parse(UnwrapText(reply));
+        //Cache the extraction text
+        await _briefCache.SetAsync(userID, hash, rawText);
+
+        //convert it into a C# API object
+        ExtractionResults parsedReply = Parse(rawText);
 
         //3. NEW: check the brief on all levels, and get the requirements, outcomes and criteria
         // that have been successfully validated (not empty, and actually exist in the brief)
         var result = Validate(parsedReply, briefText);
-       
+
 
         //.4 Log the COUNTS of the brief items                                      
         var proposedItems = CountProposedBriefItems(parsedReply);

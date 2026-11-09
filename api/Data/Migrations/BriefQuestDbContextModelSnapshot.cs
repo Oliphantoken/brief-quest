@@ -22,6 +22,27 @@ namespace BriefQuest.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BriefQuest.Entities.AICacheEntry", b =>
+                {
+                    b.Property<string>("OwnerID")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BriefHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ResponseJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("OwnerID");
+
+                    b.ToTable("AICacheEntries");
+                });
+
             modelBuilder.Entity("BriefQuest.Entities.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -575,6 +596,17 @@ namespace BriefQuest.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("BriefQuest.Entities.AICacheEntry", b =>
+                {
+                    b.HasOne("BriefQuest.Entities.AppUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("BriefQuest.Entities.Brief", b =>

@@ -18,6 +18,7 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
     public DbSet<Quest> Quests => Set<Quest>();
     public DbSet<CommandWord> CommandWords => Set<CommandWord>();
     public DbSet<UsageCounter> UsageCounters => Set<UsageCounter>();
+    public DbSet<AICacheEntry> AICacheEntries => Set<AICacheEntry>();
 
     /// <summary>
     /// On creating a model, specify any rules it has and relationships to other entities by
@@ -90,11 +91,21 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
 
         );
 
+        //Usage counter
         modelBuilder.Entity<UsageCounter>()
             .HasKey( u => new {u.OwnerID, u.Day} );
         modelBuilder.Entity<UsageCounter>()
             .HasOne(u => u.Owner).WithMany()
             .HasForeignKey(u => u.OwnerID)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        //AI Cache Entry
+        modelBuilder.Entity<AICacheEntry>()
+            .HasKey(a => new {a.OwnerID});
+        modelBuilder.Entity<AICacheEntry>()
+            .HasOne(a => a.Owner).WithMany()
+            .HasForeignKey(a => a.OwnerID)
             .OnDelete(DeleteBehavior.Cascade);
 
     }

@@ -53,6 +53,8 @@ builder.Services.AddRateLimiter(options =>
         await context.HttpContext.Response.WriteAsync("Too many requests. Please slow down.");
     };
 });
+//Add the AI brief extract caching service
+builder.Services.AddScoped<AICacheService>();
 
 //-------------------------------------------------------------------------
 var app = builder.Build();

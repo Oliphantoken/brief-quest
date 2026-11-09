@@ -76,7 +76,7 @@ public static class BriefEndpoints
             return Results.CreatedAtRoute("GetBrief", new { id = dto.ID }, dto);
         });
 
-        //POST new brief to Gemini
+        //POST new brief to Gemini. PRIVACY: brief text is sent to the Gemini API. Free-tier prompts may be used by Google.
         briefGroup.MapPost("/{id}/extract", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext, UsageCapService capService, ExtractionService extractionService) =>
         {
             var userID = CurrentUserID(user);
@@ -98,7 +98,7 @@ public static class BriefEndpoints
             ValidatedExtraction extractedItems;
             try {
                 //1. Extract brief items
-                extractedItems = await extractionService.ExtractAsync(brief.Text);
+                extractedItems = await extractionService.ExtractAsync(brief.Text, userID);
 
             } catch (GeminiUnavailableException ex) {
                 var status = ex.StatusCode is 429 or >= 500 ? 503 : 502;
