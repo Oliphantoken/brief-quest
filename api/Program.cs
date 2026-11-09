@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using BriefQuest.Data;
 using BriefQuest.Endpoints;
 using BriefQuest.Entities;
@@ -30,6 +32,27 @@ builder.Services.ConfigureAll<BearerTokenOptions>(options =>
 });
 //Register AI usage counter service
 builder.Services.AddScoped<UsageCapService>();
+//Add rate limiter service to limit how often a user can request extraction
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>( context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            factory: _ => new FixedWindowRateLimiterOptions {
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }
+        )
+    );
+
+    options.OnRejected = async (context, _) =>
+    {
+        context.HttpContext.Response.StatusCode = 429;
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please slow down.");
+    };
+});
 
 //-------------------------------------------------------------------------
 var app = builder.Build();
@@ -42,6 +65,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication(); //ID check: who are you?
 app.UseAuthorization(); //the guest list: are you allowed in?
+app.UseRateLimiter();
+
 app.MapGroup("/account").MapIdentityApi<AppUser>();
 
 app.MapGet("/whoami", (ClaimsPrincipal user) => user.Identity?.Name)
