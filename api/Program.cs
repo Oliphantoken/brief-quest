@@ -74,7 +74,6 @@ app.MapGroup("/account").MapIdentityApi<AppUser>();
 app.MapGet("/whoami", (ClaimsPrincipal user) => user.Identity?.Name)
     .RequireAuthorization();
 
-
 app.MapGet("/", () => "Brief Quest API is running!");
 
 /* Let IOptions retrieve the configured settings card (GeminiOptions) so its values can be checked
