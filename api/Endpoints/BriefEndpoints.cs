@@ -88,7 +88,7 @@ public static class BriefEndpoints
         .ProducesProblem(400)
         .ProducesProblem(401);
 
-        //POST new brief to Gemini. PRIVACY: brief text is sent to the Gemini API. Free-tier prompts may be used by Google.
+        //POST new brief to Gemini (i.e. Extraction). PRIVACY: brief text is sent to the Gemini API. Free-tier prompts may be used by Google.
         briefGroup.MapPost("/{id}/extract", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext, UsageCapService capService, ExtractionService extractionService) =>
         {
             var userID = CurrentUserID(user);
@@ -123,6 +123,9 @@ public static class BriefEndpoints
             //Organise extraction into lists
             var outcomeEntities = new List<Outcome>();
             var quests = new List<Quest>();
+            //Get all command words from the DB. This is to associate the command words with quests that includes them.
+            var commandWords = await dbcontext.CommandWords.AsNoTracking().ToDictionaryAsync(c => c.Word.ToLower());
+
 
             //2. Convert JSON brief items into C# entities. Start with JSON Outcomes list.
             foreach(var o in extractedItems.Outcomes)
@@ -138,9 +141,13 @@ public static class BriefEndpoints
                     //Add it to the new outcome entity
                     outcome.Criteria.Add(criterion);
 
+                    //Detect bloom level from potential command word
+                    var verb = c.Text.Split(' ').FirstOrDefault()?.ToLower() ?? "";
+                    var bloom = commandWords.TryGetValue(verb, out var cw) ? cw.BloomLevel : (BloomLevel?)null;
+
                     //Create a quest entity for every criteria and add to the quests list
                     quests.Add(new Quest { BriefID = brief.ID, Criterion = criterion, Text = c.Text,
-                                            SourceSentence = c.SourceSentence, Tier = c.Tier});
+                                            SourceSentence = c.SourceSentence, Tier = c.Tier, BloomLevel = bloom});
                 }
 
                 //The new outcome entity filled with its criteria entities is added to the outcomesEntities list
@@ -248,11 +255,15 @@ public static class BriefEndpoints
             if (appUser == null) return Results.NotFound();
 
             var result = await userManager.DeleteAsync(appUser);
-            return result.Succeeded ? Results.NoContent() : Results.Problem();
+            return result.Succeeded ? Results.NoContent() : Results.Problem(
+                                                        title: "Account deletion failed.",
+                                                        detail: string.Join(", ", result.Errors.Select(e => e.Description)),
+                                                        statusCode: StatusCodes.Status500InternalServerError
+                                                    );
             
-        }).RequireAuthorization()
+        })
         .WithSummary("Delete a user's account")
-        .Produces(201)
+        .Produces(204)
         .ProducesProblem(404);
 
 

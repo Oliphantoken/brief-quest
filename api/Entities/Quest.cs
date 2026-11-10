@@ -16,6 +16,7 @@ public class Quest {
 
     public Tier? Tier {get; set; }
     public QuestStatus Status { get; set; } = QuestStatus.Todo;
+    public BloomLevel? BloomLevel {get; set; }
 
     public string? FirstStep { get; set; }
     public DateTimeOffset CreatedAt {get; set; } = DateTimeOffset.UtcNow;

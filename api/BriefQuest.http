@@ -124,3 +124,11 @@ Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ### whoami without a token
 GET {{BriefQuest_HostAddress}}/whoami
+###
+
+
+//---------------------------------------------------------
+//--------------------COMMAND WORDS------------------------
+
+GET {{BriefQuest_HostAddress}}/command-words?bloomLevel=Evaluate
+###

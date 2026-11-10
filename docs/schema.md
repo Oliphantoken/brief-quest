@@ -111,6 +111,15 @@ CREATE INDEX ix_quests_brief_id    ON quests(brief_id);
 - Do we show a "replace quests" option after the first extraction?
 - Integer IDs are guessable, so authorisation checks are essential (Day 12).
 
+## Infrastructure
+
+| Component |  Service  |   Notes   |
+|-----------|-----------|-----------|
+| API       | Google Cloud Run | Needs Docker, same GCP project as Gemini |
+| Database  | Neon (free tier) | Scales to zero when idle; auto-wakes |
+| Front end | Vercel Hobby | Personal, non-commercial use only |
+| CI        | GitHub Actions | |
+
 ## Change log
 
 - v1: first agreed version (Day 6).

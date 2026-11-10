@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BriefQuest.Data;
+using Microsoft.EntityFrameworkCore;
 namespace BriefQuest.Services;
 
 /// <summary>
@@ -145,6 +147,11 @@ public class ExtractionService
         return result;
     }
 
+    /// <summary>
+    /// Count the total of all outcomes, criteria, and requirements together.
+    /// </summary>
+    /// <param name="results"></param>
+    /// <returns></returns>
     private static int CountProposedBriefItems(ExtractionResults results)
     {
         var proposedItems = 0;
@@ -153,9 +160,6 @@ public class ExtractionService
 
         return proposedItems;
     }
-    /* private static int CountProposed(ExtractionResults parsed) =>
-    (parsed.Outcomes ?? []).Sum(o => 1 + (o.Criteria?.Count ?? 0))
-    + (parsed.Requirements?.Count ?? 0); */
 
     /// <summary>
     /// Gets the whole raw reply, and unwraps it to return the actual text

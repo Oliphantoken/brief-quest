@@ -414,6 +414,9 @@ namespace BriefQuest.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
+                    b.Property<string>("BloomLevel")
+                        .HasColumnType("text");
+
                     b.Property<int>("BriefID")
                         .HasColumnType("integer");
 

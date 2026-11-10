@@ -58,6 +58,7 @@ public class BriefQuestDbContext(DbContextOptions<BriefQuestDbContext> options) 
             .OnDelete(DeleteBehavior.SetNull);
         modelBuilder.Entity<Quest>().Property(q => q.Tier).HasConversion<string>();
         modelBuilder.Entity<Quest>().Property(q => q.Status).HasConversion<string>();
+        modelBuilder.Entity<Quest>().Property(q => q.BloomLevel).HasConversion<string>();
 
         modelBuilder.Entity<CommandWord>().HasKey(w => w.Word);
         modelBuilder.Entity<CommandWord>().Property(w => w.BloomLevel).HasConversion<string>();

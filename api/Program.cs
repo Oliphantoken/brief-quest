@@ -96,6 +96,7 @@ app.MapGet("/config-check", (IOptions<GeminiOptions> options) =>{
 
 
 app.MapBriefEndpoints();
+app.MapCommandWordEndpoints();
 
 //-------------------------------------------------------------------------
 app.Run();
