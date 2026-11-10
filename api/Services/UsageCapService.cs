@@ -11,7 +11,7 @@ namespace BriefQuest.Services;
 /// <param name="dbContext"></param>
 public class UsageCapService(BriefQuestDbContext dbContext)
 {
-    private const int DailyLimit = 5;
+    private const int DailyLimit = 1;
 
     public async Task<bool> TryIncrementAsync(string userID)
     {

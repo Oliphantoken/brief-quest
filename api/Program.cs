@@ -8,6 +8,7 @@ using BriefQuest.Options;
 using BriefQuest.Services;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.Extensions.Options;
+using BriefQuest.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,11 +56,16 @@ builder.Services.AddRateLimiter(options =>
 });
 //Add the AI brief extract caching service
 builder.Services.AddScoped<AICacheService>();
+//Add consistent problem reporting format
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 //-------------------------------------------------------------------------
 var app = builder.Build();
 //-------------------------------------------------------------------------
 
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) { app.MapOpenApi(); }
 

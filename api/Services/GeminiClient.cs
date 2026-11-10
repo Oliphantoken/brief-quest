@@ -31,12 +31,19 @@ public class GeminiClient
     public async Task<string> SendAsync(object body)
     {
         const int maxCounter = 3;
+        //OPTIONAL: start timing the extraction service
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
         for(int attempt = 1; ; attempt++)
         {
             //The URL is relative here as the base URL is passed on from the Builder (Program.cs)
             using var response = await _httpClient.PostAsJsonAsync($"v1/models/{_geminiModel}:generateContent", body);
             var text = await response.Content.ReadAsStringAsync();
-            if(response.IsSuccessStatusCode) return text;
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Gemini responded in {DurationMs}ms on attempt {Attempt}.", sw.ElapsedMilliseconds, attempt);
+                return text;
+            } 
 
             int status = (int)response.StatusCode;
 

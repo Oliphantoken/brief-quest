@@ -19,8 +19,8 @@ public static class BriefEndpoints
     public static void MapBriefEndpoints(this WebApplication app)
     {
         //The "group" is locked behind an authentication check ("are you allowed to be here?")
-        var briefGroup = app.MapGroup("/briefs").RequireAuthorization();
-        var accountGroup = app.MapGroup("/account").RequireAuthorization();
+        var briefGroup = app.MapGroup("/briefs").RequireAuthorization().WithTags("Briefs");
+        var accountGroup = app.MapGroup("/account").RequireAuthorization().WithTags("Account");
 
         //GET /briefs FROM DbContext
         briefGroup.MapGet("/", async (ClaimsPrincipal user, BriefQuestDbContext dbcontext) =>
@@ -31,7 +31,11 @@ public static class BriefEndpoints
             .Select(
                 b => new BriefDTO(ID: b.ID, Title: b.Title, Text: b.Text)
             ).ToListAsync();
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithSummary("List all briefs for the signed-in user")
+        .Produces<List<BriefDTO>>(200)
+        .ProducesProblem(401);
+
 
         //GET /briefs/id
         briefGroup.MapGet("/{id}", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext) =>
@@ -58,7 +62,11 @@ public static class BriefEndpoints
                 
 
             return brief == null ? Results.NotFound(): Results.Ok(brief);
-        }).WithName("GetBrief");
+        }).WithName("GetBrief")
+        .WithSummary("Get a brief with its outcomes, criteria and quests")
+        .Produces<BriefDetailDTO>(200)
+        .ProducesProblem(401)
+        .ProducesProblem(404);
 
         //POST a new brief
         briefGroup.MapPost("/", async (ClaimsPrincipal user, CreateBriefDTO newDTO, BriefQuestDbContext dbcontext) =>
@@ -74,7 +82,11 @@ public static class BriefEndpoints
             
             var dto = new BriefDTO(brief.ID, brief.Title, brief.Text);
             return Results.CreatedAtRoute("GetBrief", new { id = dto.ID }, dto);
-        });
+        })
+        .WithSummary("Create a new brief")
+        .Produces<BriefDTO>(201)
+        .ProducesProblem(400)
+        .ProducesProblem(401);
 
         //POST new brief to Gemini. PRIVACY: brief text is sent to the Gemini API. Free-tier prompts may be used by Google.
         briefGroup.MapPost("/{id}/extract", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext, UsageCapService capService, ExtractionService extractionService) =>
@@ -162,7 +174,17 @@ public static class BriefEndpoints
             //7. Go drink some water after this process
             return Results.Ok(new ExtractionSummaryDTO(outcomeDTOs, questDTOs, extractedItems.Rejected));
 
-        });
+        })
+        .WithSummary("Extract requirements from a brief using AI")
+        .Produces<ExtractionSummaryDTO>(200)
+        .ProducesProblem(401)
+        .ProducesProblem(404)
+        .ProducesProblem(409)
+        .ProducesProblem(429)
+        .ProducesProblem(502)
+        .ProducesProblem(503);
+
+
 
         //GET filtered quests
         briefGroup.MapGet("/{id}/quests", async (ClaimsPrincipal user, int id, Tier? tier, QuestStatus? status, BriefQuestDbContext dbcontext) =>
@@ -175,7 +197,10 @@ public static class BriefEndpoints
                                     .ToListAsync();
 
             return quests == null ? Results.NoContent() : Results.Ok(quests);            
-        });
+        })
+        .WithSummary("List filtered quests for a signed-in user")
+        .Produces<List<QuestDTO>>(200)
+        .Produces(204);
 
         //GET brief progress
         briefGroup.MapGet("/{id}/progress", async (ClaimsPrincipal user, int id, BriefQuestDbContext dbcontext) =>
@@ -193,7 +218,10 @@ public static class BriefEndpoints
 
             return Results.Ok(progress);
 
-        });
+        })
+        .WithSummary("Get brief progress by counting how many quests are in each tier, and how many of them are \"Done\"")
+        .Produces<List<TierProgressDTO>>(200)
+        .ProducesProblem(404);
 
         //PATCH an existing brief quest with a new status
         briefGroup.MapPatch("/{briefID}/quests/{questID}", async (ClaimsPrincipal user, int briefID, int questID, UpdateQuestStatusDTO dto, BriefQuestDbContext dbcontext) =>
@@ -210,7 +238,10 @@ public static class BriefEndpoints
                                 Tier: quest.Tier, Status: quest.Status, FirstStep: quest.FirstStep)
                             );
 
-        });
+        })
+        .WithSummary("Update the status of an existing brief quest")
+        .Produces<QuestDTO>(200)
+        .ProducesProblem(404);
 
         accountGroup.MapDelete("/", async (ClaimsPrincipal user, UserManager<AppUser> userManager) => {
             var appUser = await userManager.GetUserAsync(user);
@@ -219,13 +250,18 @@ public static class BriefEndpoints
             var result = await userManager.DeleteAsync(appUser);
             return result.Succeeded ? Results.NoContent() : Results.Problem();
             
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithSummary("Delete a user's account")
+        .Produces(201)
+        .ProducesProblem(404);
 
 
         app.MapGet("/criterion", (ClaimsPrincipal user) =>
         {
             return Results.Ok(new CriterionDTO(1, Tier.Merit, "some text", "some sentence"));
-        });
+        })
+        .WithSummary("Testing the /criterion uri")
+        .Produces<CriterionDTO>(200);
 
     }
 

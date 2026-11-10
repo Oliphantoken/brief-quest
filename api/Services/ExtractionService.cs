@@ -107,8 +107,11 @@ public class ExtractionService
                 responseJsonSchema = JsonDocument.Parse(responseSchema).RootElement
             }
         };
+        
+        //OPTIONAL: start timing the extraction service
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
-        //2. Send the request to the client and get the response
+        //2. THE STAR METHOD OF THE APP! Send the request to the client and get the response
         var reply = await _client.SendAsync(body);
         
         //Unwrap the response to get the actual extraction text
@@ -123,6 +126,10 @@ public class ExtractionService
         //3. NEW: check the brief on all levels, and get the requirements, outcomes and criteria
         // that have been successfully validated (not empty, and actually exist in the brief)
         var result = Validate(parsedReply, briefText);
+
+        //STOP TIMER & LOG TIME
+        sw.Stop();
+        _logger.LogInformation("Extraction complete in {DurationMs}ms for user {UserID}", sw.ElapsedMilliseconds, userID);
 
 
         //.4 Log the COUNTS of the brief items                                      
