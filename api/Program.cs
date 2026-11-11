@@ -61,7 +61,7 @@ builder.Services.AddProblemDetails();
 //Add Global exception handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 //Add CORS (Cross-Origin Resource Sharing) configurations to allow my webserver to send me API requests
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000"];
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://127.0.0.1:3000","http://localhost:3000"];
 builder.Services.AddCors(options =>
 {
    options.AddDefaultPolicy( policy => policy.WithOrigins(allowedOrigins)
