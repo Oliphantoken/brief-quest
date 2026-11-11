@@ -58,7 +58,19 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<AICacheService>();
 //Add consistent problem reporting format
 builder.Services.AddProblemDetails();
+//Add Global exception handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+//Add CORS (Cross-Origin Resource Sharing) configurations to allow my webserver to send me API requests
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000"];
+builder.Services.AddCors(options =>
+{
+   options.AddDefaultPolicy( policy => policy.WithOrigins(allowedOrigins)
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod()
+                                            .AllowCredentials()
+   ); 
+});
+
 
 //-------------------------------------------------------------------------
 var app = builder.Build();
@@ -69,6 +81,7 @@ app.UseStatusCodePages();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) { app.MapOpenApi(); }
 
+app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthentication(); //ID check: who are you?

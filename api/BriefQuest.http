@@ -41,6 +41,7 @@ Authorization: Bearer {{login.response.body.$.accessToken}}
 //GET Briefs (200)
 GET {{BriefQuest_HostAddress}}/briefs/
 Authorization: Bearer {{login.response.body.$.accessToken}}
+Origin: http://localhost:3000
 
 ###
 
