@@ -46,7 +46,7 @@ Origin: http://localhost:3000
 ###
 
 //GET briefs/1 (200)
-GET {{BriefQuest_HostAddress}}/briefs/41
+GET {{BriefQuest_HostAddress}}/briefs/58
 Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ###
@@ -64,7 +64,7 @@ Authorization: Bearer {{login.response.body.$.accessToken}}
 ###
 
 //GET briefs/4/progress
-GET {{BriefQuest_HostAddress}}/briefs/10/progress
+GET {{BriefQuest_HostAddress}}/briefs/56/progress
 Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ###
@@ -82,7 +82,7 @@ Content-Type: application/json
 ###
 
 //PATCH (Update) the Status of a quest in a brief with a new value (e.g. Done)
-PATCH {{BriefQuest_HostAddress}}/briefs/10/quests/4
+PATCH {{BriefQuest_HostAddress}}/briefs/58/quests/85
 Authorization: Bearer {{login.response.body.$.accessToken}}
 Content-Type: application/json
 

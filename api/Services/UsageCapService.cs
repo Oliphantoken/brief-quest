@@ -6,12 +6,12 @@ namespace BriefQuest.Services;
 
 /// <summary>
 /// A service to keep a counter for how many times the user has extracted a brief during the day.
-/// There's a daily limit per user (currently 5)
+/// There's a daily limit per user (currently 10)
 /// </summary>
 /// <param name="dbContext"></param>
 public class UsageCapService(BriefQuestDbContext dbContext)
 {
-    private const int DailyLimit = 1;
+    private const int DailyLimit = 10;
 
     public async Task<bool> TryIncrementAsync(string userID)
     {
