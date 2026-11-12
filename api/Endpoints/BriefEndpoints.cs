@@ -191,6 +191,124 @@ public static class BriefEndpoints
         .ProducesProblem(502)
         .ProducesProblem(503);
 
+        //POST uploaded PDF or .docx file to Gemini. PRIVACY: brief text is sent to the Gemini API. Free-tier prompts may be used by Google.
+        briefGroup.MapPost("/{id}/extract-file", async (ClaimsPrincipal user, int id, IFormFile file, BriefQuestDbContext dbContext, ExtractionService extractionService, UsageCapService capService) =>
+        {
+            var userID = CurrentUserID(user);
+
+            var brief = await dbContext.briefs.FirstOrDefaultAsync( b => b.ID == id && b.OwnerID == userID && b.ArchivedAt == null);
+
+            if(brief == null) return Results.NotFound();
+
+            if(brief.ExtractedAt != null)
+            {
+                return Results.Conflict(new {message = "This brief hsa already been extracted."});
+            }
+
+            //Validate file type
+            var allowedFileType = new[]
+            {
+                "application/pdf",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            };
+
+            if (!allowedFileType.Contains(file.ContentType))
+            {
+                return Results.Problem(title: "Unsupported file type. Please upload a PDF or Word (.docx) file.",
+                                        statusCode: 415);
+            }
+            
+            //Validate file size (5MB limit)
+            const long maxBytes = 5 * 1024 * 1024;
+            if(file.Length > maxBytes)
+            {
+                return Results.Problem(title: "The file is too large. Maximum size is 5 MB.",
+                                        statusCode: 413);
+            }
+
+            //Validate usage cap count
+            var allowedCount = await capService.TryIncrementAsync(userID);
+            if (!allowedCount)
+            {
+                return Results.Problem(title: "You have reached today's AI limit. Please try again tomorrow.",
+                                        statusCode: 429);
+            }
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            var bytes = ms.ToArray();
+
+            ValidatedExtraction extractedBrief;
+            try
+            {
+                extractedBrief = await extractionService.ExtractAsync(bytes, file.ContentType, userID);
+            }catch(GeminiUnavailableException ex)
+            {
+                var status = ex.StatusCode is 429 or >= 500 ? 503 : 502;
+                return Results.Problem(title: "The AI service is unavailable. Please try again soon.",
+                                        statusCode: status);
+            }
+            catch (InvalidAiOutputException)
+            {
+                return Results.Problem(title: "The AI's answer could not be verified. Please try again.",
+                                        statusCode: 502);
+            }
+
+            //Save quests
+            var outcomeEntities = new List<Outcome>();
+            var quests = new List<Quest>();
+
+            foreach (var o in extractedBrief.Outcomes)
+            {
+                var outcome = new Outcome { BriefID = brief.ID, Code = o.Code, Text = o.Text };
+                foreach (var c in o.Criteria)
+                {
+                    var criterion = new Criterion {
+                        Tier = c.Tier!.Value, Text = c.Text, SourceSentence = c.SourceSentence
+                    };
+                    outcome.Criteria.Add(criterion);
+                    quests.Add(new Quest {
+                        BriefID = brief.ID, Criterion = criterion,
+                        Text = c.Text, SourceSentence = c.SourceSentence, Tier = c.Tier
+                    });
+                }
+                outcomeEntities.Add(outcome);
+            }
+
+            //Make requirements into quests
+            foreach (var r in extractedBrief.Requirements){
+                quests.Add(new Quest {
+                    BriefID = brief.ID, Text = r.Text,
+                    SourceSentence = r.SourceSentence, Tier = r.Tier
+                });
+            }
+
+            dbContext.Outcomes.AddRange(outcomeEntities);
+            dbContext.Quests.AddRange(quests);
+
+            brief.ExtractedAt = DateTimeOffset.UtcNow;
+
+            //Save everything
+            await dbContext.SaveChangesAsync();
+
+            var outcomeDTOs = outcomeEntities.Select(o => new OutcomeDetailDTO(o.ID, o.Code, o.Text,
+                o.Criteria.Select(c => new CriterionDTO(c.ID, c.Tier, c.Text, c.SourceSentence))
+                            .ToList())).ToList();
+
+            var questDTOs = quests.Select(q => new QuestDTO(
+                q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
+                .ToList();
+
+            return Results.Ok(new ExtractionSummaryDTO(outcomeDTOs, questDTOs, extractedBrief.Rejected));
+        })
+        .RequireAuthorization()
+        .DisableAntiforgery()
+        .WithSummary("Extract requirements from an uploaded PDF or Word file")
+        .Accepts<IFormFile>("multipart/form-data")
+        .Produces<ExtractionSummaryDTO>(200)
+        .ProducesProblem(401).ProducesProblem(404).ProducesProblem(409)
+        .ProducesProblem(413).ProducesProblem(415).ProducesProblem(429)
+        .ProducesProblem(502).ProducesProblem(503);
 
 
         //GET filtered quests

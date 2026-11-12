@@ -29,10 +29,12 @@ export async function login(email: string, password: string) {
 export async function apiFetch(path: string, options: RequestInit = {}){
     const token = typeof window !== "undefined" ? localStorage.getItem("bq_token") : null;
 
+    const isFormData = options.body instanceof FormData;
+
     const res = await fetch(`${API}${path}`, {
         ...options,
         headers: {
-            "Content-Type": "application/json",
+            ...(isFormData ? {} : {"Content-Type": "application/json"}),
             ...(token ? {Authorization: `Bearer ${token}` } : {}),
             ...(options.headers ?? {}),
         } 
