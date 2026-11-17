@@ -26,6 +26,7 @@ public static class BriefEndpoints
         briefGroup.MapGet("/", async (ClaimsPrincipal user, BriefQuestDbContext dbcontext) =>
         {
             var userID = CurrentUserID(user);
+
             return await dbcontext.briefs.AsNoTracking()
             .Where(b => b.ArchivedAt == null && b.OwnerID == userID)
             .Select(

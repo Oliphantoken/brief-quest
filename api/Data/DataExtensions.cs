@@ -9,7 +9,13 @@ public static class DataExtensions
     public static void AddBriefQuestDB(this WebApplicationBuilder builder)
     {
         var connectionString = builder.Configuration.GetConnectionString("BriefQuest");
-        builder.Services.AddNpgsql<BriefQuestDbContext>(connectionString);
+        builder.Services.AddNpgsql<BriefQuestDbContext>(
+            connectionString,
+            options => options.EnableRetryOnFailure(
+                maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null
+            )     
+        );
         
     }
 
