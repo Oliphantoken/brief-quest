@@ -3,7 +3,9 @@
 An AI-powered assignment brief analyser built for students who struggle with keeping track of their progress when completing requirements and fulfilling assessment criteria. Paste or upload an assignment brief and Brief Quest extracts every requirement into a checklist, organised by Pass, Merit and Distinction, with each item linked back to the exact sentence it came from.
 
 **Live demo:** https://brief-quest-gamma.vercel.app/
+
 **API docs:** Coming soon
+
 **CI status:** ![CI](https://github.com/oliphantoken/brief-quest/actions/workflows/ci.yml/badge.svg)
 
 ---
@@ -27,23 +29,23 @@ Responses are cached per user in the database to reduce API calls.
 
 ```
 ┌─────────────────────────────────────────┐
-│  Browser (Vercel)                        │
+│  Browser (Vercel)                       │
 │  Next.js 15 · React · TypeScript        │
-│  Tailwind CSS                            │
+│  Tailwind CSS                           │
 └──────────────┬──────────────────────────┘
                │ HTTPS + JSON
                │ Bearer token (Authorization header)
 ┌──────────────▼──────────────────────────┐
-│  API (Google Cloud Run)                  │
-│  ASP.NET Core 10 · C# · Minimal APIs   │
+│  API (Render)                           │
+│  ASP.NET Core 10 · C# · Minimal APIs    │
 │  ASP.NET Core Identity                  │
 │  Entity Framework Core 10 · Npgsql      │
 └──────┬───────────────────────┬──────────┘
        │ EF Core               │ HttpClient
 ┌──────▼──────────┐   ┌────────▼──────────┐
-│  PostgreSQL      │   │  Gemini API        │
-│  (Neon)          │   │  (Google AI        │
-│                  │   │   Studio)          │
+│  PostgreSQL     │   │  Gemini API       │
+│  (Neon)         │   │  (Google AI       │
+│                 │   │   Studio)         │
 └─────────────────┘   └───────────────────┘
 ```
 
@@ -68,7 +70,7 @@ Responses are cached per user in the database to reduce API calls.
 | AI | Google Gemini API (Flash model, structured output) |
 | Testing | xUnit, WebApplicationFactory, GitHub Actions |
 | Containers | Docker, docker compose |
-| Hosting | Google Cloud Run (API), Neon (database), Vercel (front end) |
+| Hosting | Render (API), Neon (database), Vercel (front end) |
 
 ---
 
@@ -226,7 +228,7 @@ These are set on Cloud Run. Never commit them.
 
 ---
 
-## Roadmap
+## Roadmap - Future plans
 
 - Google sign-in (OAuth)
 - JWT authentication
