@@ -9,6 +9,7 @@ using BriefQuest.Services;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.Extensions.Options;
 using BriefQuest.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,12 +72,15 @@ builder.Services.AddCors(options =>
    ); 
 });
 
-// var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-// builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
 //-------------------------------------------------------------------------
 var app = builder.Build();
 //-------------------------------------------------------------------------
+
+//Migrate any new DB updates to the DB.
+using (var scope = app.Services.CreateScope()) {
+    var db = scope.ServiceProvider.GetRequiredService<BriefQuestDbContext>();
+    db.Database.Migrate();
+}
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
