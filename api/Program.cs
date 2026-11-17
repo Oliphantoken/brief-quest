@@ -28,7 +28,7 @@ builder.Services.AddIdentityApiEndpoints<AppUser>()
 //Limit the token expiry time
 builder.Services.ConfigureAll<BearerTokenOptions>(options =>
 {
-   options.BearerTokenExpiration = TimeSpan.FromMinutes(10);
+   options.BearerTokenExpiration = TimeSpan.FromMinutes(20);
    options.RefreshTokenExpiration = TimeSpan.FromMinutes(60); 
 });
 //Register AI usage counter service
@@ -71,6 +71,8 @@ builder.Services.AddCors(options =>
    ); 
 });
 
+// var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+// builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 //-------------------------------------------------------------------------
 var app = builder.Build();

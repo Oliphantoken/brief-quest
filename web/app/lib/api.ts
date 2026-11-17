@@ -47,18 +47,28 @@ export async function apiFetch(path: string, options: RequestInit = {}){
         throw new Error("Session expired.");
     }
 
+    if (!res.ok) {
+    let message = `${res.status}: Request failed`;
+    try {
+        const contentType = res.headers.get("content-type") ?? "";
+        if (contentType.includes("application/json") || contentType.includes("application/problem+json")) {
+        const body = await res.json();
+        message = body.detail ?? body.title ?? body.message ?? message;
+        } else {
+        message = await res.text() || message;
+        }
+    } catch {
+        // If parsing fails, keep the status-based message
+    }
+    throw new Error(`${res.status}: ${message}`);
+    }
     return res;
-}
-
-async function throwOrReturnRes(res:Response){
-    if(!res.ok) throw new Error(await res.text());
-    return res.json();
 }
 
 //GET /briefs
 export async function getBriefs(){
     const res = await apiFetch("/briefs");
-    return throwOrReturnRes(res);
+    return res.json();
 }
 
 //POST new brief
@@ -68,20 +78,20 @@ export async function createBrief(title: string, text: string){
         body: JSON.stringify({ title, text })
     });
 
-    return throwOrReturnRes(res);
+    return res.json();
 }
 
 
 //POST brief to Gemini: Extract it
 export async function extractBrief(id: number){
     const res = await apiFetch(`/briefs/${id}/extract`, {method: "POST"});
-    return throwOrReturnRes(res);
+    return res.json();
 }
 
 //GET brief/id
 export async function getBriefDetail(id: number){
     const res = await apiFetch(`/briefs/${id}`);
-    return throwOrReturnRes(res);
+    return res.json();
 }
 
 //PATCH quest status
@@ -91,5 +101,5 @@ export async function patchQuestStatus(briefID: number, questID: number, status:
         body : JSON.stringify({ status })
     });
 
-    return throwOrReturnRes(res);
+    return res.json();
 }

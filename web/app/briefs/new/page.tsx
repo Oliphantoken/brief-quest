@@ -1,9 +1,13 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createBrief, apiFetch } from "@/app/lib/api";
+import { getToken, clearToken } from "@/app/lib/token";
+import Link from "next/link";
+
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+
 
 export default function NewBriefPage() {
   const router = useRouter();
@@ -13,6 +17,17 @@ export default function NewBriefPage() {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+     setMounted(true);
+   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (typeof window !== "undefined" && !getToken()) { router.replace("/auth"); return; }
+  }, [mounted]); //empty dependency array so the function runs once on mount only
+  
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,7 +55,7 @@ export default function NewBriefPage() {
         }
       }
 
-      router.push(`/briefs/${brief.id}`);
+    router.push(`/briefs/${brief.id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -48,8 +63,14 @@ export default function NewBriefPage() {
     }
   }
 
+  if (loading) return <p className="p-8 text-gray-500">Loading...</p>
+
   return (
     <main className="max-w-2xl mx-auto mt-10 p-4">
+      <p className="text-red-600 mb-4">{error}</p>
+      <Link href="/briefs" className="text-sm text-teal-700 underline mb-4 block">
+        ← Back to briefs
+      </Link>
       <h1 className="text-2xl font-bold mb-6">New brief</h1>
 
       <div className="flex gap-4 mb-6">
@@ -63,7 +84,7 @@ export default function NewBriefPage() {
           className={`px-4 py-2 rounded border ${mode === "file"
             ? "bg-teal-600 text-white border-teal-600"
             : "text-teal-700 border-teal-600"}`}>
-          Upload PDF or Word
+          Upload a PDF or Word (.docx) document
         </button>
       </div>
 

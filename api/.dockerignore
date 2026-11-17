@@ -12,6 +12,7 @@
 **/.gitignore
 **/.project
 **/.settings
+**/appsettings.Development.json
 **/.toolstarget
 **/.vs
 **/.vscode

@@ -28,6 +28,15 @@ public class GeminiClient
         return await SendAsync(request);
     }
 
+    
+    /// <summary>
+    /// Send your requestbody to the AI. It will attempt to resend it a few times,
+    /// with a delay inbetween each attempt, and return either the response
+    /// or throw an exception.
+    /// </summary>
+    /// <param name="body">The request body</param>
+    /// <returns>string Response body</returns>
+    /// <exception cref="GeminiUnavailableException"></exception>
     public async Task<string> SendAsync(object body)
     {
         const int maxCounter = 3;

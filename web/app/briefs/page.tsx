@@ -11,18 +11,35 @@ export default function BriefsPage() {
   const router = useRouter();
   const [briefs, setBriefs] = useState<Brief[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!getToken()) { router.replace("/auth"); return; }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (!getToken()) {
+      router.replace("/auth");
+      return;
+    }
     getBriefs()
       .then(setBriefs)
-      .catch(e => setError(e.message));
-  }, [router]);
+      .catch(e => {
+        if(e.message !== "Session expired.") setError(e.message);
+      })
+      .finally(() => setLoading(false));
+}, [mounted]);
 
   function signOut() {
     clearToken();
     router.push("/auth");
   }
+
+  if (loading) return <p className="p-8 text-gray-500">Loading...</p>
+
+  
 
   return (
     <main className="max-w-2xl mx-auto mt-10 p-4">
@@ -39,9 +56,11 @@ export default function BriefsPage() {
         </div>
       </div>
       {error && <p className="text-red-600">{error}</p>}
-      {briefs.length === 0 && !error && (
+
+      {!loading && briefs.length === 0 && !error && (
         <p className="text-gray-500">No briefs yet. Create one to get started.</p>
       )}
+      
       <ul className="flex flex-col gap-3">
         {briefs.map(b => (
           <li key={b.id}>
