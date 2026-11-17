@@ -23,6 +23,7 @@ An AI-powered assignment brief analyser built for students who struggle with kee
 
 BriefQuest sends the text of assignment briefs to the Gemini API (Google). On the free tier, Google may use submitted prompts to improve its models. Do not submit sensitive or personal information through this app.
 Responses are cached per user in the database to reduce API calls.
+
 ---
 
 ## Architecture
