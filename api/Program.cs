@@ -19,6 +19,15 @@ builder.Services.AddOpenApi();
 builder.AddAiClientAndConfig();
 //Add extraction service
 builder.Services.AddScoped<ExtractionService>();
+//Add CORS (Cross-Origin Resource Sharing) configurations to allow my webserver to send me API requests
+var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? new[] {"http://127.0.0.1:3000","http://localhost:3000"};
+builder.Services.AddCors(options => { options.AddDefaultPolicy( policy => policy.WithOrigins(allowedOrigins)
+                                                .AllowAnyHeader()
+                                                .AllowAnyMethod()
+                                                .AllowCredentials()
+                                            ); 
+                        });
 //Add database
 builder.AddBriefQuestDB();
 //Add authorisation and authentication/identity endpoints and stores
@@ -61,16 +70,6 @@ builder.Services.AddScoped<AICacheService>();
 builder.Services.AddProblemDetails();
 //Add Global exception handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-//Add CORS (Cross-Origin Resource Sharing) configurations to allow my webserver to send me API requests
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://127.0.0.1:3000","http://localhost:3000"];
-builder.Services.AddCors(options =>
-{
-   options.AddDefaultPolicy( policy => policy.WithOrigins(allowedOrigins)
-                                            .AllowAnyHeader()
-                                            .AllowAnyMethod()
-                                            .AllowCredentials()
-   ); 
-});
 
 //-------------------------------------------------------------------------
 var app = builder.Build();
@@ -82,12 +81,12 @@ using (var scope = app.Services.CreateScope()) {
     db.Database.Migrate();
 }
 
+app.UseCors();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) { app.MapOpenApi(); }
 
-app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthentication(); //ID check: who are you?
