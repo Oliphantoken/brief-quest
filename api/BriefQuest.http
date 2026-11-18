@@ -110,14 +110,14 @@ Content-Type: application/json
 POST {{BriefQuest_HostAddress}}/account/register
 Content-Type: application/json
 
-{ "email": "iman@example.com", "password": "Test-pass-123!" }
+{ "email": "newuser@example.com", "password": "Test-pass-123!" }
 
 ### login
 # @name login
 POST {{BriefQuest_HostAddress}}/account/login
 Content-Type: application/json
 
-{ "email": "iman@example.com", "password": "Test-pass-123!" }
+{ "email": "web@example.com", "password": "Test-pass-123!" }
 
 ### whoami with the token
 GET {{BriefQuest_HostAddress}}/whoami

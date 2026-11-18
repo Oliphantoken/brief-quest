@@ -56,7 +56,7 @@ public static class BriefEndpoints
                         )
                     ).ToList(),
                     b.Quests.Select(
-                        q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep)
+                        q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep, false)
                     ).ToList())
                 )
                 .FirstOrDefaultAsync();                            
@@ -158,7 +158,7 @@ public static class BriefEndpoints
             //2.b Create a quest for every requirement as well and add to the quests list
             foreach(var r in extractedItems.Requirements)
             {
-                quests.Add(new Quest { BriefID = brief.ID, Text = r.Text, SourceSentence = r.SourceSentence, Tier = r.Tier });
+                quests.Add(new Quest { BriefID = brief.ID, Text = r.Text, SourceSentence = r.SourceSentence, Tier = r.Tier, IsDeadline = r.IsDeadline });
             }
 
             //3. Add outcomes and quests lists to DB context
@@ -176,7 +176,7 @@ public static class BriefEndpoints
                         o.Criteria.Select(c => new CriterionDTO(c.ID, c.Tier, c.Text, c.SourceSentence))
                         .ToList()))
                     .ToList();
-            var questDTOs = quests.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
+            var questDTOs = quests.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep, q.IsDeadline))
                                     .ToList();
 
             //7. Go drink some water after this process
@@ -280,7 +280,8 @@ public static class BriefEndpoints
             foreach (var r in extractedBrief.Requirements){
                 quests.Add(new Quest {
                     BriefID = brief.ID, Text = r.Text,
-                    SourceSentence = r.SourceSentence, Tier = r.Tier
+                    SourceSentence = r.SourceSentence,
+                    Tier = r.Tier, IsDeadline = r.IsDeadline
                 });
             }
 
@@ -297,7 +298,7 @@ public static class BriefEndpoints
                             .ToList())).ToList();
 
             var questDTOs = quests.Select(q => new QuestDTO(
-                q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
+                q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep, q.IsDeadline))
                 .ToList();
 
             return Results.Ok(new ExtractionSummaryDTO(outcomeDTOs, questDTOs, extractedBrief.Rejected));
@@ -319,7 +320,7 @@ public static class BriefEndpoints
             var query = dbcontext.Quests.AsNoTracking().Where(q => q.BriefID == id && q.Brief.OwnerID == userID);
             if(tier != null) query = query.Where(q => q.Tier == tier);
             if(status != null) query = query.Where(q => q.Status == status);
-            var quests = await query.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep))
+            var quests = await query.Select(q => new QuestDTO(q.ID, q.Text, q.SourceSentence, q.Tier, q.Status, q.FirstStep, q.IsDeadline))
                                     .ToListAsync();
 
             return quests == null ? Results.NoContent() : Results.Ok(quests);            
@@ -361,7 +362,7 @@ public static class BriefEndpoints
             await dbcontext.SaveChangesAsync();
 
             return Results.Ok( new QuestDTO (ID: quest.ID, Text: quest.Text, SourceSentence: quest.SourceSentence,
-                                Tier: quest.Tier, Status: quest.Status, FirstStep: quest.FirstStep)
+                                Tier: quest.Tier, Status: quest.Status, FirstStep: quest.FirstStep, quest.IsDeadline)
                             );
 
         })

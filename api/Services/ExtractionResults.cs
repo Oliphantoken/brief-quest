@@ -3,7 +3,7 @@ namespace BriefQuest.Services;
 
 public record ExtractionResults(List<ExtractedRequirement> Requirements, List<ExtractedOutcome>? Outcomes);
 
-public record ExtractedRequirement( string Text, string SourceSentence, Tier? Tier);
+public record ExtractedRequirement( string Text, string SourceSentence, Tier? Tier, bool IsDeadline = false);
 
 public record ExtractedCriterion(Tier? Tier, string Text, string SourceSentence);
 
