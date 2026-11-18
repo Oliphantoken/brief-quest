@@ -429,6 +429,9 @@ namespace BriefQuest.Data.Migrations
                     b.Property<string>("FirstStep")
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsDeadline")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("SourceSentence")
                         .IsRequired()
                         .HasColumnType("text");

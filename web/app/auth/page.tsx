@@ -30,6 +30,7 @@ export default function AuthPage() {
 
   return (
     <main className="max-w-sm mx-auto mt-20 p-6 border rounded-xl">
+
       <h1 className="text-2xl font-bold mb-6">
         {mode === "login" ? "Sign in" : "Register"}
       </h1>
@@ -40,7 +41,7 @@ export default function AuthPage() {
         <input type="password" placeholder="Password" value={password}
           onChange={e => setPassword(e.target.value)} required
           className="border rounded px-3 py-2" />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        
         <button type="submit" className="bg-teal-600 text-white rounded px-4 py-2">
           {mode === "login" ? "Sign in" : "Create account"}
         </button>
@@ -49,6 +50,15 @@ export default function AuthPage() {
         className="mt-4 text-sm text-teal-700 underline">
         {mode === "login" ? "No account? Register" : "Have an account? Sign in"}
       </button>
+      
+      {error && <p className="text-orange-400 text-sm">{error}</p>}
+
+      <p className="text-ms text-gray-400 mt-2">
+        Hello! This is a demo app, using free hosting services, so 
+        please be patient, first load may take a moment while the server wakes up. 
+        Thank you!
+      </p>
+
     </main>
   );
 }

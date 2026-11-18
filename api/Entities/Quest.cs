@@ -21,4 +21,6 @@ public class Quest {
     public string? FirstStep { get; set; }
     public DateTimeOffset CreatedAt {get; set; } = DateTimeOffset.UtcNow;
 
+    public bool IsDeadline { get; set; } = false;
+
 }

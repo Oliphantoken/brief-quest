@@ -11,6 +11,7 @@ namespace BriefQuest.Services;
 public class ExtractionService
 {
     private readonly GeminiClient _client;
+
     private const string responseSchema = """
     {
       "type": "object",
@@ -28,11 +29,11 @@ public class ExtractionService
                 "items": {
                   "type": "object",
                   "properties": {
-                    "tier": { "type": "string", "enum": ["Pass", "Merit", "Distinction"] },
+                    "tier": { "type": "string", "enum": ["Pass","Merit","Distinction"] },
                     "text": { "type": "string" },
                     "sourceSentence": { "type": "string" }
                   },
-                  "required": ["tier", "text", "sourceSentence"]
+                  "required": ["text", "sourceSentence"]
                 }
               }
             },
@@ -46,7 +47,8 @@ public class ExtractionService
             "properties": {
               "text": { "type": "string" },
               "sourceSentence": { "type": "string" },
-              "tier": { "type": "string", "enum": ["Pass", "Merit", "Distinction"] }
+              "tier": { "type": "string", "enum": ["Pass","Merit","Distinction"] },
+              "isDeadline": { "type": "boolean" }
             },
             "required": ["text", "sourceSentence"]
           }
@@ -55,7 +57,7 @@ public class ExtractionService
       "required": ["outcomes", "requirements"]
     }
     """;
-
+    
     private const string Instructions = """
     You extract assessment requirements from a student assignment brief.
     Briefs vary widely in structure. Some have numbered learning outcomes (LO1, LO2).
