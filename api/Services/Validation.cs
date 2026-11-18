@@ -16,7 +16,7 @@ public static class SourceSentenceValidator
     public static bool IsPresent(string briefText, string? sentence)
     {
         if(string.IsNullOrWhiteSpace(sentence)) return false;
-        return Normalise(briefText).Contains(Normalise(sentence), StringComparison.Ordinal);
+        return Normalise(briefText).Contains(Normalise(sentence), StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

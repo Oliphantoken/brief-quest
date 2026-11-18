@@ -137,6 +137,9 @@ export default function BriefPageClient() {
       {/* Collapsible brief text */}
       <CollapsibleText text={brief.text} />
 
+      {/* Note on AI usage */}
+      <p className="text-ms font-normal mb-2"><b>Note:</b>Google's Gemini AI is being used for extraction.</p>
+      <p className="text-ms font-normal mb-2">Remove any sensitive or personal data <b>before</b> pressing the button.</p>
 
       {/* Extract Button */
       !brief.extractedAt && (

@@ -49,10 +49,6 @@ export default function NewBriefPage() {
           // Don't set Content-Type: browser sets it with the boundary automatically
           headers: {},
         });
-        if (!res.ok) {
-          const msg = await res.text();
-          throw new Error(`Extraction failed: ${msg}`);
-        }
       }
 
     router.push(`/briefs/${brief.id}`);
@@ -67,13 +63,13 @@ export default function NewBriefPage() {
 
   return (
     <main className="max-w-2xl mx-auto mt-10 p-4">
-      <p className="text-red-600 mb-4">{error}</p>
       <Link href="/briefs" className="text-sm text-teal-700 underline mb-4 block">
         ← Back to briefs
       </Link>
-      <h1 className="text-2xl font-bold mb-6">New brief</h1>
+      <h1 className="text-2xl font-bold mb-2">New brief</h1>
+      <p className="text-sm font-normal mb-6">Coming soon: upload your .docx or .pdf brief file!</p>
 
-      <div className="flex gap-4 mb-6">
+      {/* <div className="flex gap-4 mb-6">
         <button onClick={() => setMode("text")}
           className={`px-4 py-2 rounded border ${mode === "text"
             ? "bg-teal-600 text-white border-teal-600"
@@ -84,9 +80,9 @@ export default function NewBriefPage() {
           className={`px-4 py-2 rounded border ${mode === "file"
             ? "bg-teal-600 text-white border-teal-600"
             : "text-teal-700 border-teal-600"}`}>
-          Upload a PDF or Word (.docx) document
+          Soon: Upload a PDF or Word (.docx) document
         </button>
-      </div>
+      </div> */}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input type="text" placeholder="Title" value={title}
@@ -119,13 +115,19 @@ export default function NewBriefPage() {
           </div>
         )}
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className="text-orange-400 text-sm">{error}</p>}
+
         <button type="submit" disabled={loading || (mode === "file" && !file)}
           className="bg-teal-600 text-white rounded px-4 py-2 disabled:opacity-50">
           {loading
             ? mode === "file" ? "Uploading and extracting..." : "Saving..."
             : mode === "file" ? "Upload and extract" : "Save brief"}
         </button>
+
+         {/* Note on AI usage */}
+        <p className="text-ms font-normal mb-2"><b>Note:</b>Google's Gemini AI is being used for brief extraction.</p>
+        <p className="text-ms font-normal mb-2">Remove any sensitive or personal data <b>before</b> saving the brief.</p>
+
       </form>
     </main>
   );
