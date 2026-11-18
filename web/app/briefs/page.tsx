@@ -37,8 +37,14 @@ export default function BriefsPage() {
     router.push("/auth");
   }
 
-  if (loading) return <p className="p-8 text-gray-500">Loading...</p>
-
+  if (loading) return (
+    <main className="p-8">
+      <p className="text-gray-500 animate-pulse">Loading brief...</p>
+      <p className="text-xs text-gray-400 mt-2">
+        First load may take a moment while the server wakes up.
+      </p>
+    </main>
+  );
   
 
   return (
