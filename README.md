@@ -2,6 +2,10 @@
 
 An AI-powered assignment brief analyser built for students who struggle with keeping track of their progress when completing requirements and fulfilling assessment criteria. Paste or upload an assignment brief and Brief Quest extracts every requirement into a checklist, organised by Pass, Merit and Distinction, with each item linked back to the exact sentence it came from.
 
+
+[![Demo of BriefQuest MVP](https://img.youtube.com/vi/TSdPe5rMa1E/maxresdefault.jpg)](https://www.youtube.com/watch?v=TSdPe5rMa1E)
+
+
 **Live demo:** https://brief-quest-gamma.vercel.app/
 
 **API docs:** Coming soon
