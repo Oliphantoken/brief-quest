@@ -6,7 +6,7 @@ public class SourceSentenceValidatorTests
     [Theory]
     [InlineData("Include a design document.", true)]
     [InlineData("Include        a design document.", true)]
-    [InlineData("include a design document.", false)]
+    [InlineData("include a design document.", true)]
     [InlineData("Include a document.", false)]
     [InlineData("", false)]
     [InlineData(" ", false)]

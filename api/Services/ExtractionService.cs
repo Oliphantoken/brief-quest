@@ -202,7 +202,7 @@ public class ExtractionService
             contents = new[] { new { parts = new object[] { new { 
                 inline_data = new {
                     mime_type = "application/pdf",
-                    data = hash //Convert.ToBase64String(fileBytes)
+                    data = Convert.ToBase64String(fileBytes)
                 }}, 
                 new { text = "Extract all assessment requirements from this document." } } } },
             generationConfig = new {

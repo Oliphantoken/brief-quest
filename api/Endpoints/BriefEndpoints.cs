@@ -203,7 +203,7 @@ public static class BriefEndpoints
 
             if(brief.ExtractedAt != null)
             {
-                return Results.Conflict(new {message = "This brief hsa already been extracted."});
+                return Results.Conflict(new {message = "This brief has already been extracted."});
             }
 
             //Validate file type
@@ -213,7 +213,7 @@ public static class BriefEndpoints
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             };
 
-            if (!allowedFileType.Contains(file.ContentType))
+            if (!allowedFileType.Contains(file?.ContentType))
             {
                 return Results.Problem(title: "Unsupported file type. Please upload a PDF or Word (.docx) file.",
                                         statusCode: 415);
@@ -221,7 +221,7 @@ public static class BriefEndpoints
             
             //Validate file size (5MB limit)
             const long maxBytes = 5 * 1024 * 1024;
-            if(file.Length > maxBytes)
+            if(file?.Length > maxBytes)
             {
                 return Results.Problem(title: "The file is too large. Maximum size is 5 MB.",
                                         statusCode: 413);
@@ -236,7 +236,7 @@ public static class BriefEndpoints
             }
 
             using var ms = new MemoryStream();
-            await file.CopyToAsync(ms);
+            await file!.CopyToAsync(ms);
             var bytes = ms.ToArray();
 
             ValidatedExtraction extractedBrief;
